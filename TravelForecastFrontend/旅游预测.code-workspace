@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../旅游预测-Python预测服务"
+		},
+		{
+			"path": "../旅游预测后端"
+		},
+		{
+			"path": "../旅游预测小程序端"
+		}
+	],
+	"settings": {
+		"java.compile.nullAnalysis.mode": "automatic"
+	}
+}

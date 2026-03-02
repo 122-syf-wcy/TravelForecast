@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>景区视频讲解上传指南</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #1890ff;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .info-box {
+            background-color: #f0f5ff;
+            border-left: 4px solid #1890ff;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f5f5f5;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #1890ff;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background-color: #40a9ff;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>景区视频讲解上传指南</h1>
+
+    <div class="info-box">
+        <p>请将景区讲解视频文件放置在此文件夹中（web/public/videos/）。</p>
+        <p>详细的上传指南请查看：<a href="/docs/video-upload-guide.md" target="_blank">视频上传指南文档</a></p>
+    </div>
+
+    <h2>视频命名规则</h2>
+    <table>
+        <tr>
+            <th>景区名称</th>
+            <th>文件名</th>
+        </tr>
+        <tr>
+            <td>梅花山风景区</td>
+            <td>meihuashan-guide.mp4</td>
+        </tr>
+        <tr>
+            <td>乌蒙大草原</td>
+            <td>wumeng-guide.mp4</td>
+        </tr>
+        <tr>
+            <td>玉舍国家森林公园</td>
+            <td>yushe-guide.mp4</td>
+        </tr>
+        <tr>
+            <td>明湖国家湿地公园</td>
+            <td>minghu-guide.mp4</td>
+        </tr>
+        <tr>
+            <td>水城古镇</td>
+            <td>shuicheng-guide.mp4</td>
+        </tr>
+    </table>
+
+    <h2>快速操作</h2>
+    <ol>
+        <li>从哔哩哔哩下载合适的景区介绍视频</li>
+        <li>将视频重命名为对应景区的文件名</li>
+        <li>将视频文件复制到此文件夹中</li>
+        <li>刷新网页查看效果</li>
+    </ol>
+
+    <a href="/user/service" class="btn">返回景区服务页面</a>
+</body>
+
+</html>

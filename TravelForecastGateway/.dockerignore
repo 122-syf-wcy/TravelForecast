@@ -1,0 +1,17 @@
+target/*.original
+target/classes/
+target/generated-sources/
+target/generated-test-sources/
+target/test-classes/
+target/maven-status/
+target/maven-archiver/
+*.md
+.idea/
+*.iml
+logs/
+.git/
+.gitignore
+start.bat
+start.sh
+src/
+pom.xml
