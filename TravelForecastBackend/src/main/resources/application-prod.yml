@@ -1,0 +1,128 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/travel_prediction?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: travel_user
+    password: Travel@2024  # ⚠️ 请修改为安全密码
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    encoding: UTF-8
+
+  redis:
+    host: localhost
+    port: 6379
+    password: # 如果Redis设置了密码，请在此填写
+    database: 0
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 2
+        max-wait: -1ms
+
+  mail:
+    host: smtp.qq.com  # ⚠️ 请修改为你的邮件服务器
+    port: 587
+    username: your-email@qq.com  # ⚠️ 请修改为你的邮箱
+    password: your-authorization-code  # ⚠️ 请修改为授权码
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+# OSS配置
+oss:
+  endpoint: https://oss-cn-beijing.aliyuncs.com
+  region: cn-beijing
+  bucket: smarttourism717
+  domain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
+  publicDomain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
+  access-key-id: LTAI5tBCTtgd9vd8EZexBRb5
+  access-key-secret: UpjDrjgMfEpCIcRrykM76MyYp7Zt7b
+
+# Python预测服务配置
+prediction:
+  service:
+    url: http://localhost:8001
+    connect-timeout: 10000
+    read-timeout: 60000
+
+# JWT配置
+jwt:
+  secret: TravelPredictionSecretKey2024ForProductionEnvironment  # ⚠️ 生产环境请修改
+  expiration: 86400000  # 24小时
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.travel: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: C:/logs/travel-prediction.log
+    max-size: 50MB
+    max-history: 30
+    total-size-cap: 1GB
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      simple:
+        enabled: true
+
+# 跨域配置
+cors:
+  allowed-origins:
+    - http://8.137.85.127
+    - http://localhost:3000
+    - http://localhost:8080
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowed-headers:
+    - "*"
+  allow-credentials: true
+  max-age: 3600
+

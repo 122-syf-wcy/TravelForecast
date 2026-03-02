@@ -1,0 +1,190 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: travel-prediction
+
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/travel_prediction?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: password
+    # 连接池配置
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: TravelHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+
+  # JSON配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: always
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+  # 邮件配置（用于管理员审核通知）
+  mail:
+    host: smtp.qq.com
+    username: syf120508@foxmail.com
+    password: ${MAIL_AUTH_CODE:please_set_mail_auth_code}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+  # Redis配置（用于缓存AI响应，提升性能）
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 0
+      timeout: 3000
+      lettuce:
+        pool:
+          max-active: 50    # 连接池最大连接数
+          max-idle: 20      # 连接池最大空闲连接
+          min-idle: 5       # 连接池最小空闲连接
+          max-wait: 3000    # 连接池最大阻塞等待时间（毫秒）
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  # 配置文件位置
+  config-location: 
+  # Mapper XML文件位置
+  mapper-locations: classpath*:/mapper/**/*.xml
+  # 实体类扫描路径
+  type-aliases-package: com.travel.entity
+  
+  # 全局配置
+  global-config:
+    # 是否打印Banner
+    banner: true
+    db-config:
+      # 主键类型（AUTO-数据库自增）
+      id-type: auto
+      # 逻辑删除全局配置（默认值，实体类可通过@TableLogic覆盖）
+      # 对于 Integer 类型：0=未删除, 1=已删除
+      # 对于 LocalDateTime 类型：NULL=未删除, 时间戳=已删除（由实体类注解控制）
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      # 表名前缀
+      # table-prefix: t_
+  
+  # MyBatis配置
+  configuration:
+    # 开启驼峰命名转换
+    map-underscore-to-camel-case: true
+    # 配置日志输出（生产环境建议使用Slf4jImpl，以便通过日志框架控制格式）
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    # 缓存配置
+    cache-enabled: true
+    lazy-loading-enabled: true
+    # 返回map时，值为null也显示
+    call-setters-on-nulls: true
+
+# JWT配置
+jwt:
+  # 密钥（生产环境建议使用更复杂的密钥）
+  secret: TravelPredictionSecretKey2025LiupanshuiTourismSystem
+  # Token有效期（7天，单位：秒）
+  expiration: 604800
+  # Token前缀
+  token-prefix: Bearer
+  # Token请求头名称
+  header: Authorization
+
+# 日志配置
+logging:
+  level:
+    root: info
+    com.travel: debug
+    com.travel.mapper: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %-40.40logger{39} : %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %-40.40logger{39} : %msg%n"
+  file:
+    name: logs/travel-prediction.log
+    max-size: 10MB
+    max-history: 30
+
+# Actuator监控配置（可选）
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# 应用自定义配置
+app:
+  # 文件上传路径
+  upload-path: /uploads
+  # 图片访问前缀
+  image-prefix: /images
+  # 环境标识: local(本地开发) | dev(开发) | prod(生产)
+  env: ${APP_ENV:local}
+  # 前端URL（生产环境使用）
+  frontend-url: ${APP_FRONTEND_URL:http://localhost:3000}
+  # OSS配置
+  oss:
+    # 是否直接使用OSS URL（本地开发设为true，生产环境设为false通过Nginx代理）
+    # true: 前端直接访问OSS URL（适合本地开发）
+    # false: 转换为相对路径，通过Nginx代理访问（适合生产环境）
+    use-direct-url: ${APP_OSS_DIRECT:true}
+
+# DashScope（通义千问）配置
+dashscope:
+  # 直接使用本地配置的 API Key（仅本地环境使用，勿提交到公共仓库）
+  api-key: sk-c444b733ee0c4e29a215b07cd875929f
+
+# Python预测服务配置
+python:
+  prediction:
+    service:
+      url: http://localhost:8001  # Python FastAPI服务地址
+
+# 高德地图配置
+amap:
+  api:
+    key: 339146bdb9038c3caf85a7aca9c9bb7f  # 高德地图Web服务API Key
+
+# 阿里云OSS配置
+oss:
+  endpoint: https://oss-cn-beijing.aliyuncs.com
+  region: cn-beijing
+  bucket: smarttourism717
+  domain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
+  publicDomain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
+  # 改为你新的有效 AccessKey（请从阿里云控制台获取）
+  access-key-id: LTAI5t7AvM8aEFV9rxT7wVY6
+  access-key-secret: SCNTM1T0KYdcqaggeOW0g4uY396OJF

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智教黔行 - AI研学导师</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script type="text/javascript">
+        window._AMapSecurityConfig = { securityJsCode: 'f2a43086e55393d7a4f147892046741a' };
+    </script>
+    <script src="https://webapi.amap.com/maps?v=2.0&key=c3e29f04743a329cec5eefab9549b413"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <div class="status-bar">
+        <div class="status-dot"></div>
+        <span>黔小游已就位</span>
+    </div>
+
+    <div class="chat-panel">
+        <div class="avatar-section">
+            <div class="avatar-wrapper" id="avatarWrapper">
+                <div class="voice-ripple"></div>
+                <div class="voice-ripple"></div>
+                <div class="voice-ripple"></div>
+                <video src="assets/avatar.mp4" class="avatar-video" id="avatarVideo" loop muted playsinline></video>
+                <div class="status-indicator" id="statusIndicator"></div>
+            </div>
+            <div class="avatar-name">黔小游</div>
+            <div class="avatar-title">研学导师 · 在线</div>
+        </div>
+
+        <div class="messages-container" id="messagesContainer">
+            <div class="message assistant">
+                <div class="message-bubble">
+                    你好呀！我是<strong>黔小游</strong>，你的贵州研学导师！<br><br>
+                    有什么关于六盘水的问题，尽管问我吧！
+                </div>
+                <div class="message-time">刚刚</div>
+            </div>
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <button class="mic-btn" id="micBtn" title="按住说话">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path
+                        d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1 1.93c-3.94-.49-7-3.85-7-7.93h2c0 3.31 2.69 6 6 6s6-2.69 6-6h2c0 4.08-3.06 7.44-7 7.93V19h4v2H8v-2h4v-3.07z" />
+                </svg>
+            </button>
+            <div class="input-wrapper">
+                <input type="text" class="text-input" id="textInput" placeholder="输入问题或按麦克风说话...">
+                <button class="send-btn" id="sendBtn">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const map = new AMap.Map('map', {
+            zoom: 13, center: [104.83, 26.59], pitch: 50, viewMode: '3D',
+            mapStyle: 'amap://styles/whitesmoke'
+        });
+        AMap.plugin(['AMap.ToolBar', 'AMap.Scale'], function () {
+            map.addControl(new AMap.ToolBar({ position: 'LB' }));
+            map.addControl(new AMap.Scale());
+        });
+
+        const WS_URL = 'ws://localhost:8000/ws/avatar';
+        const messagesContainer = document.getElementById('messagesContainer');
+        const textInput = document.getElementById('textInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const micBtn = document.getElementById('micBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const avatarWrapper = document.getElementById('avatarWrapper');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const avatarVideo = document.getElementById('avatarVideo');
+
+        let ws = null, isRecording = false, mediaRecorder = null, audioChunks = [], currentAudio = null;
+        let pendingText = null;
+
+        avatarVideo.currentTime = 0;
+
+        function connectWebSocket() {
+            ws = new WebSocket(WS_URL);
+            ws.onopen = () => console.log('✅ WebSocket 已连接');
+            ws.onmessage = async (event) => {
+                if (event.data instanceof Blob) await playAudioWithText(event.data);
+                else handleMessage(JSON.parse(event.data));
+            };
+            ws.onclose = () => { console.log('❌ 断开，3秒后重连'); setTimeout(connectWebSocket, 3000); };
+            ws.onerror = (e) => console.error('WebSocket 错误:', e);
+        }
+
+        function handleMessage(data) {
+            if (data.type === 'text_output' && !data.data.isPartial) {
+                pendingText = data.data.text;
+            }
+            if (data.type === 'status') updateStatus(data.data.status);
+        }
+
+        function addMessage(role, content) {
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            div.innerHTML = `<div class="message-bubble">${marked.parse(content)}</div><div class="message-time">${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div>`;
+            messagesContainer.insertBefore(div, typingIndicator);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTyping() { typingIndicator.classList.add('show'); messagesContainer.scrollTop = messagesContainer.scrollHeight; }
+        function hideTyping() { typingIndicator.classList.remove('show'); }
+
+        function updateStatus(status) {
+            if (status === 'thinking') { statusIndicator.className = 'status-indicator thinking'; showTyping(); }
+            else if (status === 'idle') { hideTyping(); }
+        }
+
+        function sendMessage() {
+            const text = textInput.value.trim();
+            if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+            addMessage('user', text);
+            textInput.value = '';
+            ws.send(JSON.stringify({ type: 'TEXT_INPUT', data: { text } }));
+            showTyping();
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+                audioChunks = [];
+                mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+                mediaRecorder.onstop = () => { sendAudio(new Blob(audioChunks, { type: 'audio/webm' })); stream.getTracks().forEach(t => t.stop()); };
+                mediaRecorder.start();
+                isRecording = true;
+                micBtn.classList.add('recording');
+            } catch (e) { console.error('录音失败:', e); alert('无法访问麦克风'); }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                micBtn.classList.remove('recording');
+            }
+        }
+
+        function sendAudio(blob) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+            addMessage('user', '🎤 语音消息');
+            showTyping();
+            blob.arrayBuffer().then(buffer => ws.send(buffer));
+        }
+
+        function startSpeaking() {
+            avatarWrapper.classList.add('speaking');
+            statusIndicator.className = 'status-indicator speaking';
+            avatarVideo.play().catch(e => console.log('视频播放失败:', e));
+        }
+
+        function stopSpeaking() {
+            avatarWrapper.classList.remove('speaking');
+            statusIndicator.className = 'status-indicator';
+            avatarVideo.pause();
+        }
+
+        async function playAudioWithText(blob) {
+            if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+
+            const url = URL.createObjectURL(blob);
+            currentAudio = new Audio(url);
+            currentAudio.preload = 'auto';
+
+            await new Promise((resolve) => {
+                currentAudio.oncanplaythrough = () => resolve();
+                currentAudio.onerror = () => resolve();
+                setTimeout(resolve, 3000);
+                currentAudio.load();
+            });
+
+            hideTyping();
+            if (pendingText) {
+                addMessage('assistant', pendingText);
+                pendingText = null;
+            }
+            startSpeaking();
+
+            currentAudio.onended = () => { stopSpeaking(); URL.revokeObjectURL(url); };
+            currentAudio.onerror = () => stopSpeaking();
+
+            try { await currentAudio.play(); }
+            catch (e) { console.error('播放失败:', e); stopSpeaking(); }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        textInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        micBtn.addEventListener('mousedown', startRecording);
+        micBtn.addEventListener('mouseup', stopRecording);
+        micBtn.addEventListener('mouseleave', stopRecording);
+        micBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startRecording(); });
+        micBtn.addEventListener('touchend', stopRecording);
+
+        connectWebSocket();
+        setInterval(() => { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'PING' })); }, 30000);
+    </script>
+</body>
+
+</html>

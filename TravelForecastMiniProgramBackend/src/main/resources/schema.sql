@@ -1,0 +1,30 @@
+-- 小程序专用轮播图表
+CREATE TABLE IF NOT EXISTS mp_banners (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(200) COMMENT '标题',
+    image VARCHAR(500) COMMENT '图片URL',
+    link VARCHAR(500) COMMENT '跳转链接',
+    sort INT DEFAULT 0 COMMENT '排序',
+    enabled TINYINT(1) DEFAULT 1 COMMENT '是否启用',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) COMMENT '小程序轮播图表';
+
+-- 小程序文创商品表
+CREATE TABLE IF NOT EXISTS mp_products (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL COMMENT '商品名称',
+    description VARCHAR(500) COMMENT '商品描述',
+    price DECIMAL(10,2) NOT NULL COMMENT '价格',
+    original_price DECIMAL(10,2) COMMENT '原价',
+    image_url VARCHAR(500) COMMENT '商品图片',
+    category VARCHAR(50) COMMENT '分类',
+    tags VARCHAR(200) COMMENT '标签',
+    stock INT DEFAULT 999 COMMENT '库存',
+    sales INT DEFAULT 0 COMMENT '销量',
+    qd_price INT COMMENT '黔豆兑换价格',
+    status VARCHAR(20) DEFAULT 'ACTIVE' COMMENT '状态',
+    sort_order INT DEFAULT 0 COMMENT '排序',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) COMMENT '小程序文创商品表';

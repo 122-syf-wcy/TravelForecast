@@ -1,0 +1,176 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /ai-api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: travel-ai-service
+
+  # 数据源配置 (共享业务数据库)
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/travel_prediction?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: password
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 15
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: AIServiceHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+
+  # JSON配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: always
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+  # Redis配置 (用于缓存AI响应和会话上下文)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 1  # 使用独立的Redis数据库，与业务后端隔离
+      timeout: 3000
+      lettuce:
+        pool:
+          max-active: 30
+          max-idle: 15
+          min-idle: 5
+          max-wait: 3000
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.travel.ai.entity
+  global-config:
+    banner: true
+    db-config:
+      id-type: auto
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+    cache-enabled: true
+    lazy-loading-enabled: true
+    call-setters-on-nulls: true
+
+# JWT配置 (与业务后端保持一致，用于验证Token)
+jwt:
+  secret: TravelPredictionSecretKey2025LiupanshuiTourismSystem
+  expiration: 604800
+  token-prefix: Bearer
+  header: Authorization
+
+# ==================== AI 服务配置 ====================
+
+# DashScope（通义千问）配置
+dashscope:
+  api-key: ${DASHSCOPE_API_KEY:sk-c444b733ee0c4e29a215b07cd875929f}
+  # qwen-turbo 比 qwen-plus 快3-5倍，适合日常聊天
+  default-model: qwen-turbo
+  planning-model: qwen-turbo
+  max-tokens: 1024
+  temperature: 0.5
+
+# ==================== 外部服务调用配置 ====================
+
+# 业务后端服务
+business-service:
+  url: http://localhost:8080/api
+  timeout: 10000
+
+# 数字人后端服务
+digital-human:
+  url: http://localhost:8083
+  ws-url: ws://localhost:8083/ws/avatar
+  timeout: 30000
+  enabled: true
+
+# Python预测服务
+prediction-service:
+  url: http://localhost:8001
+  timeout: 30000
+
+# 高德地图配置
+amap:
+  api:
+    key: ${AMAP_API_KEY:339146bdb9038c3caf85a7aca9c9bb7f}
+
+# ==================== AI 功能模块配置 ====================
+
+ai:
+  chat:
+    # 聊天超时(秒)
+    timeout: 30
+    # 最大历史消息数(减少历史=更快响应)
+    max-history: 6
+    # 聊天最大输出Token(限制输出长度=加速生成)
+    max-tokens: 1024
+    # 静态内容缓存(小时) - 景区介绍等不变内容缓存1年
+    cache-ttl-hours: 8760
+    # 实时查询缓存(分钟) - 天气/客流等
+    realtime-cache-ttl-minutes: 10
+    # 普通对话缓存(小时) - 非静态非实时
+    normal-cache-ttl-hours: 72
+
+  planning:
+    # 行程规划超时(秒)
+    timeout: 60
+    # 行程规划最大输出Token
+    max-tokens: 3072
+    # 缓存TTL(小时) - 相同参数的行程缓存7天
+    cache-ttl-hours: 168
+
+  knowledge:
+    max-documents: 1000
+    top-k: 3
+    # 知识库搜索结果缓存(小时) - 知识库数据是静态的，缓存1年
+    cache-ttl-hours: 8760
+
+  education:
+    max-routes: 50
+    # 研学路线/方案缓存(小时) - 静态数据缓存1年
+    cache-ttl-hours: 8760
+    # 研学方案最大输出Token
+    max-tokens: 2048
+
+# ==================== 日志配置 ====================
+logging:
+  level:
+    root: info
+    com.travel.ai: debug
+    com.travel.ai.mapper: debug
+    com.travel.ai.client: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %-40.40logger{39} : %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %-40.40logger{39} : %msg%n"
+  file:
+    name: logs/travel-ai-service.log
+    max-size: 10MB
+    max-history: 30
+
+# Actuator监控
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized

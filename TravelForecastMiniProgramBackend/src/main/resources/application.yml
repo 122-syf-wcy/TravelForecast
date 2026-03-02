@@ -1,0 +1,65 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: travel-mini-program-backend
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/travel_prediction?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: password
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 1
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+oss:
+  endpoint: https://oss-cn-beijing.aliyuncs.com
+  region: cn-beijing
+  bucket: smarttourism717
+  publicDomain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
+  access-key-id: LTAI5t7AvM8aEFV9rxT7wVY6
+  access-key-secret: SCNTM1T0KYdcqaggeOW0g4uY396OJF
+
+app:
+  base-url: http://localhost:8082
+
+jwt:
+  secret: TravelPredictionSecretKey2025LiupanshuiTourismSystem
+  expiration: 604800
+
+wechat:
+  miniapp:
+    appid: wx9569d09c12f8de06
+    appsecret: 7dc2a1fea1d738a3c233f3a4628f1d01
+
+# 日志配置
+logging:
+  level:
+    root: info
+    com.travel: debug
+    com.travel.mapper: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %-40.40logger{39} : %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %-40.40logger{39} : %msg%n"
+  file:
+    name: logs/travel-mini-program.log
+    max-size: 10MB
+    max-history: 30
+

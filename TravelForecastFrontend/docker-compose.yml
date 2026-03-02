@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: travel-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: travel_prediction
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always
+
+  redis:
+    image: redis:7.0
+    container_name: travel-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  java-backend:
+    image: openjdk:11-jre-slim
+    container_name: travel-java
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+    command: java -jar travel-prediction-1.0.0.jar --spring.profiles.active=prod
+    depends_on:
+      - mysql
+      - redis
+    restart: always
+
+  python-prediction:
+    image: python:3.9-slim
+    container_name: travel-python
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./python:/app
+    working_dir: /app
+    command: bash -c "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8001"
+    depends_on:
+      - mysql
+    restart: always
+
+volumes:
+  mysql_data:

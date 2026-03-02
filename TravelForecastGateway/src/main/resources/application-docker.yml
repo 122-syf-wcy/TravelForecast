@@ -1,0 +1,114 @@
+# ====================================================
+# Docker 环境配置
+# 容器内 localhost 指向容器自身，需要用 host.docker.internal 访问宿主机服务
+# ====================================================
+
+spring:
+  data:
+    redis:
+      host: host.docker.internal
+
+  cloud:
+    gateway:
+      # 路由配置 - 覆盖所有 localhost 为 host.docker.internal
+      routes:
+        # 业务后端服务
+        - id: business-service
+          uri: http://host.docker.internal:8080
+          predicates:
+            - Path=/api/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+                redis-rate-limiter.requestedTokens: 1
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,INTERNAL_SERVER_ERROR
+                methods: GET,POST
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
+
+        # AI智能服务
+        - id: ai-service
+          uri: http://host.docker.internal:8081
+          predicates:
+            - Path=/ai-api/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                redis-rate-limiter.requestedTokens: 1
+            - name: Retry
+              args:
+                retries: 2
+                statuses: BAD_GATEWAY,INTERNAL_SERVER_ERROR
+                methods: GET,POST
+
+        # 小程序后端服务
+        - id: miniprogram-service
+          uri: http://host.docker.internal:8082
+          predicates:
+            - Path=/miniprogram-api/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 80
+                redis-rate-limiter.burstCapacity: 150
+                redis-rate-limiter.requestedTokens: 1
+
+        # Python预测服务
+        - id: prediction-service
+          uri: http://host.docker.internal:8001
+          predicates:
+            - Path=/prediction-api/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 60
+                redis-rate-limiter.requestedTokens: 1
+            - name: Retry
+              args:
+                retries: 2
+                statuses: BAD_GATEWAY,INTERNAL_SERVER_ERROR
+                methods: GET,POST
+
+        # 数字人服务
+        - id: digital-human-service
+          uri: http://host.docker.internal:8000
+          predicates:
+            - Path=/digital-human-api/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 40
+                redis-rate-limiter.burstCapacity: 80
+                redis-rate-limiter.requestedTokens: 1
+
+        # WebSocket代理（数字人）
+        - id: digital-human-websocket
+          uri: ws://host.docker.internal:8000
+          predicates:
+            - Path=/ws/**
+          filters:
+            - StripPrefix=1
+
+# 日志级别 - Docker 环境降低日志量
+logging:
+  level:
+    root: info
+    com.travel.gateway: info
+    org.springframework.cloud.gateway: warn
+
