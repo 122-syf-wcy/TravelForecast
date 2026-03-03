@@ -15,12 +15,12 @@ spring:
       schema-locations: classpath:schema.sql
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/travel_prediction?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://39.97.232.141:3306/travel_prediction?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: password
+    password: TravelDB2025!
   data:
     redis:
-      host: localhost
+      host: 39.97.232.141
       port: 6379
       database: 1
 

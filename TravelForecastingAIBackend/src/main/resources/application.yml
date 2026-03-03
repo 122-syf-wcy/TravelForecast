@@ -14,9 +14,9 @@ spring:
   # 数据源配置 (共享业务数据库)
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/travel_prediction?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://39.97.232.141:3306/travel_prediction?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: root
-    password: password
+    password: TravelDB2025!
     hikari:
       minimum-idle: 5
       maximum-pool-size: 15
@@ -41,7 +41,7 @@ spring:
   # Redis配置 (用于缓存AI响应和会话上下文)
   data:
     redis:
-      host: localhost
+      host: 39.97.232.141
       port: 6379
       password:
       database: 1  # 使用独立的Redis数据库，与业务后端隔离

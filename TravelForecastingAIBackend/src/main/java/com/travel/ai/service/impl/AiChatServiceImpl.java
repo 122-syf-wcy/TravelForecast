@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import com.travel.ai.client.PredictionClient;
 
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
@@ -100,6 +101,9 @@ public class AiChatServiceImpl implements AiChatService {
 
     @Autowired(required = false)
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private PredictionClient predictionClient;
 
     @Autowired
     @Qualifier("aiTaskExecutor")
@@ -337,6 +341,27 @@ public class AiChatServiceImpl implements AiChatService {
             }
         }
 
+        // 尝试注入客流预测数据
+        if (isPredictionQuery(currentMessage) && conv.getScenicId() != null) {
+            try {
+                // 查询未来3天的预测
+                List<Map<String, Object>> predictions = predictionClient.getPrediction(conv.getScenicId(), 3);
+                if (predictions != null && !predictions.isEmpty()) {
+                    StringBuilder predText = new StringBuilder("【实时客流预测数据】");
+                    for (Map<String, Object> p : predictions) {
+                        predText.append(String.format("\\n%s: 预计客流 %s人", p.get("date"), p.get("predicted_flow")));
+                    }
+                    messages.add(com.alibaba.dashscope.common.Message.builder()
+                            .role("system")
+                            .content(predText.toString())
+                            .build());
+                    log.info("已向大模型注入 {} 的客流预测上下文", conv.getScenicId());
+                }
+            } catch (Exception e) {
+                log.warn("获取预测数据失败: {}", e.getMessage());
+            }
+        }
+
         // 历史消息（限制数量，只查最近N条，减少DB压力）
         List<Message> history = messageMapper.selectList(
                 new LambdaQueryWrapper<Message>()
@@ -482,6 +507,12 @@ public class AiChatServiceImpl implements AiChatService {
             if (message.contains(keyword)) return true;
         }
         return false;
+    }
+
+    private boolean isPredictionQuery(String message) {
+        if (message == null || message.isEmpty()) return false;
+        return message.contains("客流") || message.contains("人多") || message.contains("预测") 
+            || message.contains("人数") || message.contains("拥挤");
     }
 
     private String generateCacheKey(String message) {
