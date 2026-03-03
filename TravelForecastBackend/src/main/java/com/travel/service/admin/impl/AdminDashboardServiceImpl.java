@@ -82,7 +82,8 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .orderByDesc(PlatformStatistics::getStatDate)
                 .last("LIMIT 1")
         );
-        
+
+        // 如果没有统计数据，返回默认值
         if (latest == null) {
             result.put("totalUsers", 0);
             result.put("totalRevenue", "0");
@@ -100,7 +101,8 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
             new LambdaQueryWrapper<PlatformStatistics>()
                 .eq(PlatformStatistics::getStatDate, latest.getStatDate().minusDays(1))
         );
-        
+
+        // 构建返回数据
         result.put("totalUsers", latest.getTotalUsers());
         result.put("totalRevenue", formatRevenue(latest.getTotalRevenue()));
         result.put("totalBusiness", latest.getTotalMerchants());
@@ -117,6 +119,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
             result.put("scenicIncrease", calculateGrowthRate(
                 previous.getTotalScenics(), latest.getTotalScenics()));
         } else {
+            // 如果没有前一天的数据，增长率无法计算，返回0
             result.put("userIncrease", 0.0);
             result.put("revenueIncrease", 0.0);
             result.put("businessIncrease", 0.0);
@@ -125,7 +128,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         
         return result;
     }
-    
+
     @Override
     public Map<String, Object> getTrendData(String timeRange) {
         Map<String, Object> result = new HashMap<>();
@@ -143,7 +146,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 days = 30;
                 break;
         }
-        
+
         LocalDate endDate = LocalDate.now();
         LocalDate startDate = endDate.minusDays(days - 1);
         
@@ -177,7 +180,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
         
         return result;
     }
-    
+
     @Override
     public Map<String, Object> getDistributionData(String distributionType) {
         Map<String, Object> result = new HashMap<>();

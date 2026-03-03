@@ -1222,7 +1222,7 @@ import { User, Clock, Sunny, Warning, Notification, Location, Loading, OfficeBui
 import { Van, Bicycle, Ship, Guide, VideoPlay, Headset, Plus, HomeFilled, ShoppingCart, HelpFilled, FirstAidKit, List } from '@element-plus/icons-vue'
 import ScenicCard from '@/components/ScenicCard.vue'
 
-import CombinedScenicCard from '@/components/CombinedScenicCard.vue'
+
 import EmbeddedDigitalHuman from '@/components/EmbeddedDigitalHuman.vue'
 import Heatmap3D from '@/components/Heatmap3D.vue'
 import * as echarts from 'echarts'
@@ -4601,7 +4601,7 @@ const callEmergency = () => {
   align-items: center;
   gap: 16px;
   padding: 20px 24px;
-  background: linear-gradient(180deg, rgba(248, 113, 113, 0.1), transparent);
+  background: linear-gradient(180deg, rgba(254, 242, 242, 1), transparent);
   border-bottom: 1px solid rgba(248, 113, 113, 0.15);
 }
 
@@ -4609,7 +4609,7 @@ const callEmergency = () => {
   width: 48px;
   height: 48px;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(248, 113, 113, 0.2), rgba(239, 68, 68, 0.2));
+  background: linear-gradient(135deg, rgba(254, 226, 226, 0.8), rgba(254, 202, 202, 0.6));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4618,19 +4618,19 @@ const callEmergency = () => {
 }
 
 @keyframes emergency-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.4); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.2); }
   50% { box-shadow: 0 0 0 10px rgba(248, 113, 113, 0); }
 }
 
 .emergency-icon {
   font-size: 24px;
-  color: #F87171;
+  color: #ef4444;
 }
 
 .emergency-title {
   font-size: 20px;
   font-weight: 600;
-  color: #fff;
+  color: #1e293b;
   margin: 0 0 4px 0;
 }
 
@@ -4651,8 +4651,9 @@ const callEmergency = () => {
 
 .section-label {
   font-size: 13px;
-  color: #94a3b8;
+  color: #64748b;
   margin-bottom: 12px;
+  font-weight: 500;
 }
 
 .rescue-type-grid {
@@ -4667,31 +4668,37 @@ const callEmergency = () => {
   align-items: center;
   gap: 8px;
   padding: 16px 8px;
-  background: linear-gradient(145deg, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.7));
+  background: #f8fafc;
   border-radius: 14px;
-  border: 2px solid rgba(100, 116, 139, 0.2);
+  border: 2px solid #e2e8f0;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .rescue-type-card:hover {
-  border-color: rgba(248, 113, 113, 0.3);
+  border-color: rgba(248, 113, 113, 0.4);
+  background: #fef2f2;
   transform: translateY(-2px);
 }
 
 .rescue-type-card.active {
-  border-color: #F87171;
-  background: linear-gradient(145deg, rgba(248, 113, 113, 0.1), rgba(15, 23, 42, 0.8));
-  box-shadow: 0 0 20px rgba(248, 113, 113, 0.15);
+  border-color: #ef4444;
+  background: #fef2f2;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+.rescue-type-card.active .rescue-name {
+  color: #ef4444;
+  font-weight: 600;
 }
 
 .rescue-icon {
-  font-size: 28px;
+  font-size: 26px;
 }
 
 .rescue-name {
   font-size: 12px;
-  color: #e2e8f0;
+  color: #475569;
   text-align: center;
 }
 
@@ -4705,19 +4712,29 @@ const callEmergency = () => {
 
 .custom-input :deep(.el-input__wrapper),
 .custom-textarea :deep(.el-textarea__inner) {
-  background: rgba(30, 41, 59, 0.6) !important;
-  border: 1px solid rgba(248, 113, 113, 0.2) !important;
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
   border-radius: 12px !important;
+  box-shadow: none !important;
+  color: #334155;
+}
+
+.custom-input :deep(.el-input__inner::placeholder),
+.custom-textarea :deep(.el-textarea__inner::placeholder) {
+  color: #94a3b8 !important;
 }
 
 .custom-input :deep(.el-input__wrapper:hover),
 .custom-textarea :deep(.el-textarea__inner:hover) {
-  border-color: rgba(248, 113, 113, 0.4) !important;
+  border-color: #94a3b8 !important;
+  background: #ffffff !important;
 }
 
 .custom-input :deep(.el-input__wrapper.is-focus),
 .custom-textarea :deep(.el-textarea__inner:focus) {
-  border-color: #F87171 !important;
+  border-color: #ef4444 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
 }
 
 /* 紧急提示 */
@@ -4726,16 +4743,16 @@ const callEmergency = () => {
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  background: linear-gradient(145deg, rgba(248, 113, 113, 0.1), rgba(239, 68, 68, 0.05));
+  background: #fef2f2;
   border-radius: 12px;
-  border: 1px solid rgba(248, 113, 113, 0.2);
+  border: 1px dashed rgba(248, 113, 113, 0.4);
   font-size: 13px;
-  color: #F87171;
+  color: #dc2626;
 }
 
 .emergency-tip strong {
   font-weight: 700;
-  color: #fff;
+  color: #b91c1c;
 }
 
 /* 紧急弹窗底部 */

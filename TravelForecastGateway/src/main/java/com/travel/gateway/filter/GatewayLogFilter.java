@@ -52,9 +52,9 @@ public class GatewayLogFilter implements GlobalFilter, Ordered {
         // 记录请求信息
         if (gatewayProperties.getLog().isLogRequest()) {
             log.info("═══════════════════════════════════════════════════════════");
-            log.info("📥 [请求] {} | {} | {}", timestamp, method, path);
-            log.info("📍 客户端IP: {} | 用户ID: {}", remoteAddress, userId != null ? userId : "未登录");
-            log.info("🌐 User-Agent: {}", userAgent);
+            log.info("[请求] {} | {} | {}", timestamp, method, path);
+            log.info("客户端IP: {} | 用户ID: {}", remoteAddress, userId != null ? userId : "未登录");
+            log.info("User-Agent: {}", userAgent);
             log.info("═══════════════════════════════════════════════════════════");
         }
 
@@ -74,10 +74,10 @@ public class GatewayLogFilter implements GlobalFilter, Ordered {
                                     String responseBody = new String(content, StandardCharsets.UTF_8);
 
                                     log.info("═══════════════════════════════════════════════════════════");
-                                    log.info("📤 [响应] {} | {} | {} | 耗时: {}ms", 
+                                    log.info(" [响应] {} | {} | {} | 耗时: {}ms", 
                                             timestamp, method, path, duration);
-                                    log.info("📊 状态码: {} | 响应长度: {} bytes", statusCode, content.length);
-                                    log.info("📄 响应体: {}", responseBody.length() > 500 
+                                    log.info(" 状态码: {} | 响应长度: {} bytes", statusCode, content.length);
+                                    log.info(" 响应体: {}", responseBody.length() > 500 
                                             ? responseBody.substring(0, 500) + "..." 
                                             : responseBody);
                                     log.info("═══════════════════════════════════════════════════════════");

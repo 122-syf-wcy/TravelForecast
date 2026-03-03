@@ -23,7 +23,7 @@
         <scroll-view scroll-y class="chat-list" :scroll-into-view="lastId" :scroll-with-animation="true">
           <view class="msg" v-for="(m, i) in msgs" :key="i" :id="'msg-' + i" :class="{ 'msg-me': m.isMe }">
             <view class="avatar" :class="{ 'avatar-speaking': m.playing }" v-if="!m.isMe">
-              <image class="avatar-img" src="/static/dh-avatar.png" mode="aspectFill" />
+              <image class="avatar-img" src="/static/dh-avatar-poster.jpg" mode="aspectFill" />
             </view>
             <view class="bubble" :class="{ 'bubble-loading': m.loading }">
               <view class="typing-dots" v-if="m.loading">
@@ -72,7 +72,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { chatWithAI, textToSpeech, clearChatHistory, generateConversationId } from '@/api/digitalHuman'
+import { chatWithAI, textToSpeech, clearChatHistory, generateConversationId, uploadVoice } from '@/api/digitalHuman'
 
 const generateSessionId = () => generateConversationId()
 const clearSession = (id) => clearChatHistory(id)
@@ -301,16 +301,31 @@ const cancelRecord = () => {
 
 // 录音完成回调
 if (recorderManager) {
-  recorderManager.onStop((res) => {
+  recorderManager.onStop(async (res) => {
     if (!res.tempFilePath) return
-    // 录音完成后，先提示用户，然后发送文字（语音识别需要后端支持）
-    // 这里暂时用提示，后续可对接STT
-    uni.showToast({ title: '语音已录制，正在识别...', icon: 'none' })
-    // TODO: 上传音频到后端STT接口进行识别
-    // 临时方案：提示用户使用文字输入
-    setTimeout(() => {
-      uni.showToast({ title: '请使用文字输入', icon: 'none' })
-    }, 1500)
+    
+    uni.showLoading({ title: '正在识别语音', mask: true })
+    try {
+      // 上传音频到后端STT接口进行识别
+      const text = await uploadVoice(res.tempFilePath)
+      uni.hideLoading()
+      
+      if (text) {
+        // 关闭语音模式，把识别结果填入输入框并发送
+        voiceMode.value = false
+        inputVal.value = text
+        sendMsg()
+      } else {
+        uni.showToast({ title: '没听清，请更靠近麦克风', icon: 'none' })
+      }
+    } catch (e) {
+      uni.hideLoading()
+      uni.showToast({ title: e.message || '语音识别失败，请重试', icon: 'none' })
+      // 如果 STT 用不了，暂时切回键盘
+      setTimeout(() => {
+        voiceMode.value = false
+      }, 1500)
+    }
   })
 }
 </script>

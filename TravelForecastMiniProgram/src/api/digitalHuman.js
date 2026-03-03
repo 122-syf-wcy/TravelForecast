@@ -101,3 +101,31 @@ export const clearChatHistory = (conversationId) => {
 export const generateConversationId = () => {
   return 'mp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8)
 }
+
+/**
+ * 语音识别 (STT) - 调用数字人Python后端(5000端口)进行极速本地语音转文本
+ * @param {string} tempFilePath 小程序本地录音路径
+ * @returns {Promise<string>} 识别出的文本
+ */
+export const uploadVoice = (tempFilePath) => {
+  return new Promise((resolve, reject) => {
+    uni.uploadFile({
+      url: 'http://localhost:5000/api/stt', // 调用Python后端的STT接口
+      filePath: tempFilePath,
+      name: 'file',
+      success: (res) => {
+        try {
+          const body = JSON.parse(res.data || '{}')
+          if (body.code === 200 && body.data) {
+            resolve(body.data)
+          } else {
+            reject(new Error(body.message || '由于说话声音小等原因，没有识别到文字'))
+          }
+        } catch (e) {
+          reject(new Error('语音识别解析失败'))
+        }
+      },
+      fail: (err) => reject(err)
+    })
+  })
+}

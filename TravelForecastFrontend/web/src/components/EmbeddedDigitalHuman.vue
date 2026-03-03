@@ -13,7 +13,15 @@
           loop 
           muted 
           playsinline
+          poster="/videos/avatar-poster.jpg"
+          @error="handleVideoError"
         ></video>
+        <img 
+          v-if="videoFailed" 
+          src="/videos/avatar-poster.jpg" 
+          class="avatar-video" 
+          alt="黔小游"
+        />
         <div class="status-indicator" :class="currentStatus"></div>
       </div>
       <div class="avatar-info">
@@ -90,6 +98,11 @@ const isSpeaking = ref(false)
 const isTyping = ref(false)
 const currentStatus = ref('idle')
 const isConnected = ref(false)
+const videoFailed = ref(false)
+
+const handleVideoError = () => {
+  videoFailed.value = true
+}
 
 // DOM 引用
 const messagesContainer = ref<HTMLElement | null>(null)
@@ -682,16 +695,17 @@ const stopSpeaking = () => {
 .input-wrapper {
   flex: 1;
   display: flex;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 20px;
   padding: 4px 12px;
   align-items: center;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   transition: border-color 0.2s;
 }
 
 .input-wrapper:focus-within {
   border-color: rgba(99, 102, 241, 0.5);
+  background: #fff;
 }
 
 .text-input {
@@ -701,10 +715,10 @@ const stopSpeaking = () => {
   outline: none;
   background: transparent;
   padding: 8px 4px;
-  color: var(--text-primary);
+  color: #333; /* 改为深色文字 */
 }
 
-.text-input::placeholder { color: var(--text-secondary); }
+.text-input::placeholder { color: #999; }
 
 .send-btn {
   border: none;

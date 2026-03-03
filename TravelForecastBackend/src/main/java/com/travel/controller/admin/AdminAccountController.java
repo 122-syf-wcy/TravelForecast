@@ -63,10 +63,12 @@ public class AdminAccountController {
             @RequestBody UpdateAccountRequest request,
             @RequestAttribute(value = "userId", required = false) Long userId) {
 
+        //判断是否登录
         if (userId == null) {
             return Result.error("未登录");
         }
 
+        //获取用户信息
         User user = userMapper.selectById(userId);
         if (user == null) {
             return Result.error("用户不存在");
@@ -75,6 +77,7 @@ public class AdminAccountController {
         // 邮箱唯一性校验
         if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
             LambdaQueryWrapper<User> emailCheck = new LambdaQueryWrapper<>();
+            // 查询条件：邮箱相同但用户ID不同
             emailCheck.eq(User::getEmail, request.getEmail()).ne(User::getUserId, userId);
             if (userMapper.selectCount(emailCheck) > 0) {
                 return Result.error("该邮箱已被其他用户使用");
@@ -84,6 +87,7 @@ public class AdminAccountController {
         // 用户名唯一性校验
         if (request.getUsername() != null && !request.getUsername().equals(user.getUsername())) {
             LambdaQueryWrapper<User> nameCheck = new LambdaQueryWrapper<>();
+            // 查询条件：用户名相同但用户ID不同
             nameCheck.eq(User::getUsername, request.getUsername()).ne(User::getUserId, userId);
             if (userMapper.selectCount(nameCheck) > 0) {
                 return Result.error("该用户名已被其他用户使用");
@@ -106,6 +110,7 @@ public class AdminAccountController {
             user.setAvatar(request.getAvatar());
         }
 
+        // 更新时间
         user.setUpdatedAt(LocalDateTime.now());
         try {
             userMapper.updateById(user);

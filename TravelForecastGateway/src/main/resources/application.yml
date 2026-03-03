@@ -9,7 +9,7 @@ spring:
   # Redis配置（用于限流和缓存）
   data:
     redis:
-      host: localhost
+      host: 39.97.232.141
       port: 6379
       password:
       database: 2  # 网关使用独立的Redis数据库
@@ -21,7 +21,7 @@ spring:
           min-idle: 5
           max-wait: 3000
 
-  # Nacos 服务注册与发现
+  # Nacos 服务注册与发现（本地联调时禁用，使用静态路由即可）
   cloud:
     nacos:
       discovery:
@@ -30,6 +30,7 @@ spring:
         group: DEFAULT_GROUP
         # username: nacos             # 开启鉴权后取消注释
         # password: nacos
+        enabled: false                # 本地联调禁用Nacos，避免9848端口报错
         fail-fast: false              # Nacos不可用时不阻止启动
     
     # Spring Cloud Gateway 配置

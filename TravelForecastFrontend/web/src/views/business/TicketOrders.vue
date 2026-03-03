@@ -100,7 +100,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" label="下单时间" width="160" />
-        <el-table-column label="操作" width="160" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right" align="center">
           <template #default="{ row }">
             <div class="action-buttons">
               <template v-if="row.status === 'pending'">
@@ -464,14 +464,14 @@ onMounted(() => {
 /* 操作按钮样式 */
 .action-buttons {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 8px;
   align-items: center;
 }
 
 .action-buttons .el-button {
   margin: 0 !important;
-  padding: 5px 10px !important;
 }
 
 /* 表格样式 - 浅色主题 */

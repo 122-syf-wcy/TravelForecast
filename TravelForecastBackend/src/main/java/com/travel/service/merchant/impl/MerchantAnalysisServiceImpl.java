@@ -81,17 +81,49 @@ public class MerchantAnalysisServiceImpl implements MerchantAnalysisService {
         int prevTotalFavorites = prevStats.stream().mapToInt(ScenicStatistics::getFavoritesCount).sum();
         double prevReturnRate = prevTotalVisitors > 0 ? (prevTotalFavorites * 100.0 / prevTotalVisitors) : 0.0;
 
+        // ----------------- 获取实时的购票订单数据以叠加 -----------------
+        // 当前期间在线售票与收入附加
+        LambdaQueryWrapper<TicketOrder> currentOrderQ = new LambdaQueryWrapper<TicketOrder>()
+                .between(TicketOrder::getCreatedAt, startDate.atStartOfDay(), endDate.plusDays(1).atStartOfDay())
+                .in(TicketOrder::getStatus, "pending", "paid", "used");
+        if (scenicId != null) currentOrderQ.eq(TicketOrder::getScenicId, scenicId);
+        List<TicketOrder> currentOrders = ticketOrderMapper.selectList(currentOrderQ);
+        
+        int currentOnlineTickets = currentOrders.stream().mapToInt(o -> o.getTicketCount() != null ? o.getTicketCount() : 1).sum();
+        BigDecimal currentOrderRevenue = currentOrders.stream().map(o -> o.getTotalAmount() != null ? o.getTotalAmount() : BigDecimal.ZERO).reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        // 把实际订单量和金额加到统计项上
+        totalVisitors += currentOnlineTickets;
+        totalRevenue = totalRevenue.add(currentOrderRevenue);
+
+        // 对比期间在线售票与收入附加
+        LambdaQueryWrapper<TicketOrder> prevOrderQ = new LambdaQueryWrapper<TicketOrder>()
+                .between(TicketOrder::getCreatedAt, prevStartDate.atStartOfDay(), prevEndDate.plusDays(1).atStartOfDay())
+                .in(TicketOrder::getStatus, "pending", "paid", "used");
+        if (scenicId != null) prevOrderQ.eq(TicketOrder::getScenicId, scenicId);
+        List<TicketOrder> prevOrders = ticketOrderMapper.selectList(prevOrderQ);
+        
+        int prevOnlineTickets = prevOrders.stream().mapToInt(o -> o.getTicketCount() != null ? o.getTicketCount() : 1).sum();
+        BigDecimal prevOrderRevenue = prevOrders.stream().map(o -> o.getTotalAmount() != null ? o.getTotalAmount() : BigDecimal.ZERO).reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        prevTotalVisitors += prevOnlineTickets;
+        prevTotalRevenue = prevTotalRevenue.add(prevOrderRevenue);
+        // -----------------------------------------------------------
+
         // 计算变化率
         double visitorChange = calculateChangeRate(totalVisitors, prevTotalVisitors);
         double revenueChange = calculateChangeRate(totalRevenue.doubleValue(), prevTotalRevenue.doubleValue());
         double stayTimeChange = calculateChangeRate(avgStayTime, prevAvgStayTime);
         double returnRateChange = calculateChangeRate(returnRate, prevReturnRate);
+        double ticketChange = calculateChangeRate(currentOnlineTickets, prevOnlineTickets);
 
         Map<String, Object> result = new HashMap<>();
         result.put("totalVisitors", totalVisitors);
         result.put("visitorChange", round(visitorChange, 1));
         result.put("totalRevenue", totalRevenue.doubleValue());
         result.put("revenueChange", round(revenueChange, 1));
+        result.put("onlineTickets", currentOnlineTickets);
+        result.put("ticketChange", round(ticketChange, 1));
         result.put("avgStayTime", round(avgStayTime, 1));
         result.put("stayTimeChange", round(stayTimeChange, 1));
         result.put("returnRate", round(returnRate, 1));

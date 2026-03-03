@@ -118,7 +118,7 @@ class LSTMMultivariateModel:
             if not self._load_model_and_scalers(scenic_id):
                 logger.warning(f"模型未找到: {scenic_id}，自动触发训练...")
                 self.train(scenic_id)
-        
+        # 加载模型
         model = tf.keras.models.load_model(self._get_model_path(scenic_id))
         scalers = self.scalers[scenic_id]
         

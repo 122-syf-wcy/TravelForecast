@@ -1,0 +1,8 @@
+/Users/dongsiwei/TravelForecast/TravelForecastGateway/src/main/java/com/travel/gateway/util/JwtUtil.java
+/Users/dongsiwei/TravelForecast/TravelForecastGateway/src/main/java/com/travel/gateway/config/CorsConfig.java
+/Users/dongsiwei/TravelForecast/TravelForecastGateway/src/main/java/com/travel/gateway/filter/JwtAuthenticationFilter.java
+/Users/dongsiwei/TravelForecast/TravelForecastGateway/src/main/java/com/travel/gateway/filter/GatewayLogFilter.java
+/Users/dongsiwei/TravelForecast/TravelForecastGateway/src/main/java/com/travel/gateway/config/GatewayProperties.java
+/Users/dongsiwei/TravelForecast/TravelForecastGateway/src/main/java/com/travel/gateway/controller/HealthCheckController.java
+/Users/dongsiwei/TravelForecast/TravelForecastGateway/src/main/java/com/travel/gateway/exception/GatewayExceptionHandler.java
+/Users/dongsiwei/TravelForecast/TravelForecastGateway/src/main/java/com/travel/gateway/GatewayApplication.java
