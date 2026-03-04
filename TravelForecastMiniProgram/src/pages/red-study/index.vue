@@ -131,7 +131,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { fetchQuizList, fetchPassport } from '@/api/study'
+import { fetchQuizList, submitQuizAnswer, fetchPassport } from '@/api/study'
 import { fetchScenicSpots } from '@/api/home'
 import { resolveAssetUrl } from '@/utils/url'
 
@@ -172,7 +172,16 @@ const quizAnswered = ref(false)
 const quizPicked = ref(-1)
 const quizCorrect = ref(false)
 const quizTotal = computed(() => quizList.value.length)
-const currentQuiz = computed(() => quizList.value[quizIndex.value] || null)
+const currentQuiz = computed(() => {
+  const q = quizList.value[quizIndex.value]
+  if (!q) return null
+  return {
+    ...q,
+    spot: q.spot || q.scenicName || '',
+    options: q.options || [q.optionA, q.optionB, q.optionC, q.optionD].filter(Boolean),
+    answer: typeof q.answer === 'number' ? q.answer : 0
+  }
+})
 
 const loadQuiz = async () => {
   try {
@@ -181,12 +190,23 @@ const loadQuiz = async () => {
   } catch (e) { /* 保留空 */ }
 }
 
-const pickAnswer = (idx) => {
+const pickAnswer = async (idx) => {
   if (quizAnswered.value) return
   quizPicked.value = idx
   quizAnswered.value = true
   quizCorrect.value = idx === currentQuiz.value.answer
   if (quizCorrect.value) correctCount.value++
+
+  // 提交到后端记录答案和积分
+  const u = uni.getStorageSync('userInfo')
+  if (u && u.userId && currentQuiz.value.id) {
+    try {
+      const res = await submitQuizAnswer(u.userId, currentQuiz.value.id, idx)
+      if (res && res.explanation) {
+        currentQuiz.value.explanation = res.explanation
+      }
+    } catch (e) { /* 静默失败 */ }
+  }
 }
 
 const nextQuiz = () => {
@@ -203,8 +223,11 @@ const nextQuiz = () => {
 const passportData = ref({ badges: [], totalPoints: 0, checkedSpots: 0 })
 
 const loadPassport = async () => {
+  const u = uni.getStorageSync('userInfo')
+  if (!u || !u.userId) return
   try {
-    passportData.value = await fetchPassport()
+    const res = await fetchPassport(u.userId)
+    if (res) passportData.value = res
   } catch (e) { /* 保留默认 */ }
 }
 

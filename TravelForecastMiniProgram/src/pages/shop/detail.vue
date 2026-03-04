@@ -276,7 +276,14 @@ const getUserId = () => {
 
 const goBack = () => uni.navigateBack()
 const goHome = () => uni.switchTab({ url: '/pages/index/index' })
-const onShare = () => uni.showToast({ title: '分享功能开发中', icon: 'none' })
+const onShare = () => {
+  const name = goods.value.name || '好物推荐'
+  const price = goods.value.price || ''
+  uni.setClipboardData({
+    data: `【凉都文创】${name} ¥${price}，来凉都智游小程序看看吧~`,
+    success: () => uni.showToast({ title: '已复制分享文案', icon: 'success' })
+  })
+}
 
 const addCartHandler = async () => {
   const userId = getUserId()

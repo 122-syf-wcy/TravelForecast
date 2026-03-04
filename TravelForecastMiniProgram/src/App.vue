@@ -57,13 +57,21 @@ page {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2A9D8F 0%, #1A6B5A 100%);
+  overflow: hidden;
+  background: none;
   border: 3px solid #fff;
   box-shadow: 0 6px 20px rgba(42, 157, 143, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   animation: fabFloat 3s ease-in-out infinite;
+}
+
+.ai-fab-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: block;
 }
 
 .ai-fab-label {

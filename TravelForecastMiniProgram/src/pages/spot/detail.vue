@@ -64,6 +64,9 @@
     </view>
 
     <view class="spot-actions">
+      <view class="spot-btn spot-btn-fav" @tap="toggleFav">
+        <text class="spot-btn-t" :style="{ color: isFav ? '#e74c3c' : '#999' }">{{ isFav ? '♥ 已收藏' : '♡ 收藏' }}</text>
+      </view>
       <view class="spot-btn spot-btn-primary" @tap="onNav">
         <text class="spot-btn-t">开始导航</text>
       </view>
@@ -78,6 +81,7 @@
 import { ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { fetchSpotDetail, fetchSubSpots } from '@/api/spots'
+import { checkFavorite, addFavorite, removeFavorite } from '@/api/user'
 import { resolveAssetUrl } from '@/utils/url'
 
 const spot = ref({})
@@ -85,6 +89,40 @@ const coverUrl = ref('https://images.unsplash.com/photo-1506905925346-21bda4d32d
 const images = ref([])
 const tagList = ref([])
 const subSpots = ref([])
+const isFav = ref(false)
+const spotId = ref('')
+
+const getUserId = () => {
+  const u = uni.getStorageSync('userInfo')
+  return u && u.userId ? u.userId : null
+}
+
+const loadFavStatus = async (id) => {
+  const userId = getUserId()
+  if (!userId || !id) return
+  try {
+    const res = await checkFavorite(userId, id)
+    isFav.value = !!res
+  } catch (e) { isFav.value = false }
+}
+
+const toggleFav = async () => {
+  const userId = getUserId()
+  if (!userId) { uni.showToast({ title: '请先登录', icon: 'none' }); return }
+  try {
+    if (isFav.value) {
+      await removeFavorite(userId, spotId.value)
+      isFav.value = false
+      uni.showToast({ title: '已取消收藏', icon: 'none' })
+    } else {
+      await addFavorite(userId, spotId.value)
+      isFav.value = true
+      uni.showToast({ title: '收藏成功', icon: 'success' })
+    }
+  } catch (e) {
+    uni.showToast({ title: '操作失败', icon: 'none' })
+  }
+}
 
 const loadDetail = async (idOrCode) => {
   try {
@@ -101,8 +139,9 @@ const loadDetail = async (idOrCode) => {
     if (spot.value.category) tags.push(spot.value.category)
     tagList.value = [...new Set(tags)].filter(Boolean)
 
-    // 加载子景点
+    // 加载子景点和收藏状态
     loadSubSpots(idOrCode)
+    loadFavStatus(idOrCode)
   } catch (err) {
     uni.showToast({ title: '景区详情加载失败', icon: 'none' })
   }
@@ -155,6 +194,7 @@ const onGuide = () => {
 onLoad((options) => {
   const id = options && (options.id || options.code || options.name)
   if (id) {
+    spotId.value = id
     loadDetail(id)
   }
 })
@@ -187,6 +227,7 @@ onLoad((options) => {
 .spot-gallery-row { margin-top: 8px; white-space: nowrap; }
 .spot-gallery-img { width: 140px; height: 90px; border-radius: 10px; margin-right: 8px; display: inline-block; }
 .spot-actions { margin: 14px 16px 24px; display: flex; gap: 10px; }
+.spot-btn-fav { background: #fff; border: 1px solid #eee; }
 .spot-btn { flex: 1; padding: 12px; border-radius: 12px; text-align: center; }
 .spot-btn-primary { background: #2A9D8F; }
 .spot-btn-light { background: #E0F2F1; border: 1px solid rgba(42,157,143,0.2); }

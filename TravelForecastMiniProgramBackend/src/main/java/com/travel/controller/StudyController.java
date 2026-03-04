@@ -20,6 +20,7 @@ public class StudyController {
     private final UserBadgeMapper userBadgeMapper;
     private final UserPointsMapper pointsMapper;
     private final StudyAnswerLogMapper answerLogMapper;
+    private final FavoriteMapper favoriteMapper;
 
     @GetMapping("/quiz")
     public Result<List<StudyQuiz>> quizList(@RequestParam(required = false) String scenicName) {
@@ -89,6 +90,8 @@ public class StudyController {
         Map<String, Object> result = new HashMap<>();
         result.put("badges", badges);
         result.put("totalPoints", up.getTotalPoints());
+        result.put("checkedSpots", favoriteMapper.selectCount(
+                new LambdaQueryWrapper<Favorite>().eq(Favorite::getUserId, userId)));
         return Result.success(result);
     }
 

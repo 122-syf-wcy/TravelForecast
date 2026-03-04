@@ -28,3 +28,16 @@ CREATE TABLE IF NOT EXISTS mp_products (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) COMMENT '小程序文创商品表';
+
+-- 用户反馈表
+CREATE TABLE IF NOT EXISTS mp_feedback (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT DEFAULT NULL COMMENT '用户ID',
+    type VARCHAR(50) NOT NULL DEFAULT '其他' COMMENT '反馈类型',
+    content TEXT NOT NULL COMMENT '反馈内容',
+    contact VARCHAR(100) DEFAULT '' COMMENT '联系方式',
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT '处理状态',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id),
+    INDEX idx_status (status)
+) COMMENT '小程序用户反馈';

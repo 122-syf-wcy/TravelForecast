@@ -22,7 +22,7 @@
         <view class="nav-loc">
           <view class="loc-dot" />
           <text class="loc-city">六盘水</text>
-          <text class="loc-temp">19°C</text>
+          <text class="loc-temp">{{ temperature }}</text>
         </view>
         <view class="nav-search" @tap="onSearch">
           <view class="s-icon">
@@ -141,7 +141,7 @@
         <text>{{ bubbleMsg }}</text>
       </view>
       <view class="ai-fab-btn">
-        <text class="ai-fab-label">AI</text>
+        <image class="ai-fab-avatar" src="/static/dh-avatar.png" mode="aspectFill" />
       </view>
     </view>
 
@@ -159,6 +159,13 @@ const heroH = ref(360)
 const showBubble = ref(true)
 const swiperCur = ref(0)
 const bubbleMsg = ref('嗨~我是黔小游')
+const temperature = ref('')
+
+const getSeasonTemp = () => {
+  const m = new Date().getMonth() + 1
+  const temps = { 1: '4°C', 2: '6°C', 3: '11°C', 4: '16°C', 5: '19°C', 6: '22°C', 7: '24°C', 8: '23°C', 9: '20°C', 10: '15°C', 11: '10°C', 12: '5°C' }
+  return temps[m] || '19°C'
+}
 const noticeText = ref('六盘水梅花山滑雪场已开放，春季赏花活动火热进行中！')
 
 const bannerList = ref([
@@ -241,6 +248,7 @@ onMounted(() => {
   const info = uni.getWindowInfo()
   stBar.value = info.statusBarHeight || 20
   heroH.value = Math.floor(info.windowHeight * 0.44)
+  temperature.value = getSeasonTemp()
   setTimeout(() => { showBubble.value = false }, 4000)
   loadHomeData()
 })
@@ -265,11 +273,16 @@ const onMenu = (m) => {
     uni.navigateTo({ url: '/pages/red-study/index' })
   } else if (m.name === '文创商城') {
     uni.switchTab({ url: '/pages/shop/index' })
+  } else if (m.name === '景区预约') {
+    uni.navigateTo({ url: '/pages/life-service/index?category=' + encodeURIComponent('门票') })
   } else {
-    uni.showToast({ title: m.name + ' · 即将开放', icon: 'none' })
+    uni.navigateTo({ url: `/pages/life-service/index?category=${encodeURIComponent(m.name)}` })
   }
 }
-const onCat = (c) => uni.showToast({ title: c.name + ' · 敬请期待', icon: 'none' })
+const onCat = (c) => {
+  if (!c || !c.name) return
+  uni.navigateTo({ url: `/pages/life-service/index?category=${encodeURIComponent(c.name)}` })
+}
 const onAiGuide = () => uni.navigateTo({ url: '/pages/digital-human/index' })
 const onSeason = () => uni.navigateTo({ url: '/pages/search/index' })
 const onRedStudy = () => uni.navigateTo({ url: '/pages/red-study/index' })

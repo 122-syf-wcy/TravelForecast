@@ -252,14 +252,28 @@ const playVoice = async (msg) => {
 }
 
 const playBase64Audio = (base64Data) => {
-  // 小程序中将base64音频写入临时文件再播放
-  const fs = uni.getFileSystemManager()
-  const filePath = `${wx.env.USER_DATA_PATH}/tts_${Date.now()}.mp3`
   try {
+    // #ifdef MP-WEIXIN
+    // 小程序中将base64音频写入临时文件再播放
+    const fs = uni.getFileSystemManager()
+    const filePath = `${wx.env.USER_DATA_PATH}/tts_${Date.now()}.mp3`
     fs.writeFileSync(filePath, base64Data, 'base64')
     isSpeaking.value = true
     innerAudioCtx.value.src = filePath
     innerAudioCtx.value.play()
+    // #endif
+
+    // #ifdef H5
+    // H5模式：将base64转为Blob URL播放
+    const binary = atob(base64Data)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+    const blob = new Blob([bytes], { type: 'audio/mp3' })
+    const blobUrl = URL.createObjectURL(blob)
+    isSpeaking.value = true
+    innerAudioCtx.value.src = blobUrl
+    innerAudioCtx.value.play()
+    // #endif
   } catch (e) {
     console.error('音频播放失败:', e)
     isSpeaking.value = false
