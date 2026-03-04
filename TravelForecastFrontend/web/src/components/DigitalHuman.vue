@@ -154,8 +154,9 @@ const avatarVideo = ref<HTMLVideoElement | null>(null)
 const chatPanel = ref<HTMLElement | null>(null)
 
 // WebSocket - 通过AI服务代理，降级时直连旧数字人后端
-const WS_URL_AI_PROXY = `ws://${window.location.hostname}:8081/ai-api/ws/digital-human`
-const WS_URL_DIRECT = 'ws://localhost:8083/ws/avatar'
+const wsBase = import.meta.env.VITE_WS_BASE_URL || `ws://${window.location.hostname}:${window.location.port}`
+const WS_URL_AI_PROXY = `${wsBase}/ai-api/ws/digital-human`
+const WS_URL_DIRECT = `${wsBase}/ws/avatar`
 let ws: WebSocket | null = null
 let mediaRecorder: MediaRecorder | null = null
 let audioChunks: Blob[] = []

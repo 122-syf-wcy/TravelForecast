@@ -347,34 +347,36 @@ def chart_04_model_comparison():
     bars1[3].set_edgecolor(COLORS['red'])
     bars1[3].set_linewidth(2.5)
 
-    # --- 子图2: MAE ---
+    # --- 子图2: 置信度 (来源: arima_model.py:23, lstm_model.py:27, hybrid_model.py:28, dual_stream_model.py:133) ---
     ax2 = axes[1]
-    mae = [156, 112, 78, 68]
-    bars2 = ax2.bar(models, mae, color=colors, edgecolor=edge_colors, linewidth=1.5, width=0.6)
-    ax2.set_ylabel('MAE (人)', fontsize=11)
-    ax2.set_title('平均绝对误差 (越低越好)', fontsize=12, fontweight='bold', pad=10)
-    ax2.set_ylim(0, 200)
+    confidence = [80, 85, 88, 92]
+    bars2 = ax2.bar(models, confidence, color=colors, edgecolor=edge_colors, linewidth=1.5, width=0.6)
+    ax2.set_ylabel('置信度 (%)', fontsize=11)
+    ax2.set_title('预测置信度', fontsize=12, fontweight='bold', pad=10)
+    ax2.set_ylim(70, 100)
     ax2.spines['top'].set_visible(False)
     ax2.spines['right'].set_visible(False)
-    for bar, val in zip(bars2, mae):
-        ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 2,
-                f'{val}', ha='center', va='bottom', fontweight='bold', fontsize=11,
+    for bar, val in zip(bars2, confidence):
+        ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5,
+                f'{val}%', ha='center', va='bottom', fontweight='bold', fontsize=11,
                 color=COLORS['dark'])
     bars2[3].set_edgecolor(COLORS['red'])
     bars2[3].set_linewidth(2.5)
 
-    # --- 子图3: RMSE ---
+    # --- 子图3: 模型特征对比 (来源: 各模型源码参数) ---
     ax3 = axes[2]
-    rmse = [203, 148, 95, 82]
-    bars3 = ax3.bar(models, rmse, color=colors, edgecolor=edge_colors, linewidth=1.5, width=0.6)
-    ax3.set_ylabel('RMSE (人)', fontsize=11)
-    ax3.set_title('均方根误差 (越低越好)', fontsize=12, fontweight='bold', pad=10)
-    ax3.set_ylim(0, 250)
+    features = ['1维', '1维', '1+1维', '6+1维']
+    seq_len = [0, 14, 14, 14]
+    bars3 = ax3.bar(models, seq_len, color=colors, edgecolor=edge_colors, linewidth=1.5, width=0.6)
+    ax3.set_ylabel('序列窗口 (天)', fontsize=11)
+    ax3.set_title('输入序列长度', fontsize=12, fontweight='bold', pad=10)
+    ax3.set_ylim(0, 20)
     ax3.spines['top'].set_visible(False)
     ax3.spines['right'].set_visible(False)
-    for bar, val in zip(bars3, rmse):
-        ax3.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 2,
-                f'{val}', ha='center', va='bottom', fontweight='bold', fontsize=11,
+    for bar, val, feat in zip(bars3, seq_len, features):
+        label = f'{feat}' if val == 0 else f'{val}天/{feat}'
+        ax3.text(bar.get_x() + bar.get_width()/2, max(bar.get_height(), 0.5) + 0.3,
+                label, ha='center', va='bottom', fontweight='bold', fontsize=10,
                 color=COLORS['dark'])
     bars3[3].set_edgecolor(COLORS['red'])
     bars3[3].set_linewidth(2.5)
@@ -403,11 +405,12 @@ def chart_05_radar():
     angles = [n / float(N) * 2 * np.pi for n in range(N)]
     angles += angles[:1]
 
-    # 数据 (1-5分)
-    ours = [5, 5, 5, 5, 5, 4, 4, 5]
-    ctrip = [3, 1, 2, 2, 2, 2, 4, 4]
-    meituan = [2, 1, 1, 1, 2, 2, 5, 3]
-    traditional = [1, 0.5, 2, 1, 3, 4, 1, 2]
+    # 数据 (1-5分) —— 基于功能有无的实际对比分析，非基准测试数据
+    # 评分依据: 有该功能=5, 部分支持=3, 无=1, 非常弱=0.5
+    ours = [5, 5, 5, 5, 5, 4, 4, 5]       # 本项目均已实现
+    ctrip = [3, 1, 2, 2, 2, 2, 4, 4]       # 携程无双流融合/3D数字人
+    meituan = [2, 1, 1, 1, 2, 2, 5, 3]     # 美团侧重电商
+    traditional = [1, 0.5, 2, 1, 3, 4, 1, 2]  # 传统导游APP功能单一
 
     ours += ours[:1]
     ctrip += ctrip[:1]
@@ -437,7 +440,7 @@ def chart_05_radar():
     ax.legend(loc='lower right', bbox_to_anchor=(1.3, -0.05), fontsize=10,
               frameon=True, fancybox=True, shadow=True)
 
-    plt.title('技术优势与同类产品对比', fontsize=14, fontweight='bold',
+    plt.title('技术优势与同类产品对比\n(基于功能有无分析，非基准测试)', fontsize=14, fontweight='bold',
               color=COLORS['dark'], pad=25)
 
     save_fig(fig, '05_技术优势雷达图.png')
@@ -453,6 +456,7 @@ def chart_06_market():
                  color=COLORS['dark'], y=1.02)
 
     # --- 左图: 市场规模柱状图 + 增长率折线 ---
+    # 数据来源: 中国旅游研究院《中国研学旅行发展报告》公开数据 (2024E后为行业预测)
     years = ['2022', '2023', '2024E', '2025E', '2026E', '2027E']
     market_size = [1280, 1560, 1820, 2100, 2430, 2800]
     growth_rate = [None, 21.9, 16.7, 15.4, 15.7, 15.2]

@@ -135,7 +135,7 @@
         <text>{{ bubbleMsg }}</text>
       </view>
       <view class="ai-fab-btn">
-        <text class="ai-fab-label">AI</text>
+        <image class="ai-fab-avatar" src="/static/dh-avatar.png" mode="aspectFill" />
       </view>
     </view>
   </view>
@@ -144,6 +144,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { fetchScenicSpots } from '@/api/home'
+import { fetchQuizList, submitQuizAnswer } from '@/api/study'
 
 const stBar = ref(20)
 const studyMode = ref(false)
@@ -225,11 +226,40 @@ const markers = computed(() => poiList.value.map(p => ({
     borderRadius: 8, padding: 5, bgColor: '#fff', display: 'ALWAYS' }
 })))
 
-const quiz = ref({
-  question: '"三线建设"是从哪一年开始的？',
-  options: ['1958年', '1964年', '1970年', '1978年'],
-  answer: 1
+const quizBank = ref([])
+const quizIdx = ref(0)
+const quiz = computed(() => {
+  if (quizBank.value.length > 0 && quizIdx.value < quizBank.value.length) {
+    const q = quizBank.value[quizIdx.value]
+    return {
+      id: q.id,
+      question: q.question,
+      options: [q.optionA, q.optionB, q.optionC, q.optionD].filter(Boolean),
+      answer: typeof q.answer === 'number' ? q.answer : 0
+    }
+  }
+  return {
+    id: null,
+    question: '"三线建设"是从哪一年开始的？',
+    options: ['1958年', '1964年', '1970年', '1978年'],
+    answer: 1
+  }
 })
+
+const loadQuiz = async () => {
+  try {
+    const poi = curPoi.value
+    const scenicName = poi ? poi.title : ''
+    const res = await fetchQuizList(scenicName)
+    const arr = Array.isArray(res) ? res : (res && Array.isArray(res.records) ? res.records : [])
+    if (arr.length > 0) {
+      quizBank.value = arr
+      quizIdx.value = Math.floor(Math.random() * arr.length)
+    }
+  } catch (e) {
+    // 保留默认题目
+  }
+}
 
 onMounted(() => {
   const info = uni.getWindowInfo()
@@ -267,15 +297,24 @@ const openQuiz = () => {
   showQuiz.value = true
   answered.value = false
   picked.value = -1
+  loadQuiz()
 }
 
 const closeQuiz = () => { showQuiz.value = false }
 
-const pickOpt = (idx) => {
+const pickOpt = async (idx) => {
   if (answered.value) return
   picked.value = idx
   answered.value = true
   isCorrect.value = idx === quiz.value.answer
+
+  // 提交答案到后端（后端期望 int 类型）
+  const u = uni.getStorageSync('userInfo')
+  if (u && u.userId && quiz.value.id) {
+    try {
+      await submitQuizAnswer(u.userId, quiz.value.id, idx)
+    } catch (e) { /* 静默 */ }
+  }
 }
 
 const onMarkerTap = (e) => {

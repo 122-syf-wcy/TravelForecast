@@ -11,18 +11,19 @@ spring:
       max-request-size: 10MB
   sql:
     init:
-      mode: always
+      mode: never  # 首次部署后改为never，避免重复建表
       schema-locations: classpath:schema.sql
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://39.97.232.141:3306/travel_prediction?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root
-    password: TravelDB2025!
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:travel_prediction}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:}
   data:
     redis:
-      host: 39.97.232.141
-      port: 6379
-      database: 1
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 3
 
 mybatis-plus:
   configuration:
@@ -34,20 +35,20 @@ oss:
   region: cn-beijing
   bucket: smarttourism717
   publicDomain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
-  access-key-id: LTAI5t7AvM8aEFV9rxT7wVY6
-  access-key-secret: SCNTM1T0KYdcqaggeOW0g4uY396OJF
+  access-key-id: ${OSS_ACCESS_KEY_ID:}
+  access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
 
 app:
   base-url: http://localhost:8082
 
 jwt:
-  secret: TravelPredictionSecretKey2025LiupanshuiTourismSystem
+  secret: ${JWT_SECRET:TravelPredictionSecretKey2025LiupanshuiTourismSystem}
   expiration: 604800
 
 wechat:
   miniapp:
-    appid: wx9569d09c12f8de06
-    appsecret: 7dc2a1fea1d738a3c233f3a4628f1d01
+    appid: ${WECHAT_APPID:}
+    appsecret: ${WECHAT_APPSECRET:}
 
 # 日志配置
 logging:

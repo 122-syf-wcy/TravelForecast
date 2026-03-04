@@ -58,12 +58,39 @@ const groupedList = computed(() => {
 })
 
 const loadData = async () => {
-  list.value = await fetchItineraries()
+  const u = uni.getStorageSync('userInfo')
+  if (!u || !u.userId) return
+  try {
+    const res = await fetchItineraries(u.userId)
+    if (!Array.isArray(res)) { list.value = []; return }
+    // 后端返回 [{itinerary, items}]，展平为时间线
+    const flat = []
+    res.forEach(group => {
+      const it = group.itinerary || {}
+      const items = Array.isArray(group.items) ? group.items : []
+      if (items.length === 0) {
+        flat.push({ date: it.title || '行程', time: '', title: it.title || '未命名行程', desc: `${it.days || 1}天行程`, img: '' })
+      } else {
+        items.forEach(item => {
+          flat.push({
+            date: it.title || `第${item.dayNum || 1}天`,
+            time: item.timeSlot || '',
+            title: item.title || '',
+            desc: item.description || '',
+            img: item.imageUrl || ''
+          })
+        })
+      }
+    })
+    list.value = flat
+  } catch (e) { list.value = [] }
 }
 
 const onItem = (item) => {
-  if (item.title) {
-    uni.showToast({ title: item.title, icon: 'none' })
+  if (item.spotId) {
+    uni.navigateTo({ url: `/pages/spot/detail?id=${encodeURIComponent(item.spotId)}` })
+  } else if (item.title) {
+    uni.navigateTo({ url: `/pages/search/index` })
   }
 }
 

@@ -23,7 +23,7 @@
         </view>
         <view class="u-info">
           <text class="u-name">{{ isLogin ? userName : '点击登录' }}</text>
-          <text class="u-desc">{{ isLogin ? '已打卡 3 个景点' : '登录同步旅行数据' }}</text>
+          <text class="u-desc">{{ isLogin ? '已打卡 ' + checkedSpots + ' 个景点' : '登录同步旅行数据' }}</text>
         </view>
         <view class="ck-btn" @tap="doCheckIn">
           <text class="ck-t">签到 +5</text>
@@ -99,7 +99,7 @@
         <text>{{ bubbleMsg }}</text>
       </view>
       <view class="ai-fab-btn">
-        <text class="ai-fab-label">AI</text>
+        <image class="ai-fab-avatar" src="/static/dh-avatar.png" mode="aspectFill" />
       </view>
     </view>
 
@@ -149,7 +149,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { wechatLogin, uploadAvatar } from '@/api/auth'
-import { checkIn, getCheckInStatus } from '@/api/user'
+import { checkIn, getCheckInStatus, getFavorites } from '@/api/user'
+import { fetchPassport } from '@/api/study'
+import { fetchOrders } from '@/api/shop'
 
 const stBar = ref(20)
 const isLogin = ref(false)
@@ -157,6 +159,7 @@ const userName = ref('旅行者')
 const userAvatar = ref('')
 const showBubble = ref(true)
 const bubbleMsg = ref('签到领黔豆~')
+const checkedSpots = ref(0)
 
 // ---- 完善资料弹窗 ----
 const showProfilePopup = ref(false)
@@ -165,24 +168,24 @@ const tempNickname = ref('')     // nickname 输入框的值
 const saving = ref(false)
 
 const dataRow = ref([
-  { label: '黔豆', val: 120, key: 'qd' },
-  { label: '优惠券', val: 2, key: 'coupon' },
-  { label: '收藏', val: 5, key: 'fav' },
-  { label: '足迹', val: 8, key: 'foot' }
+  { label: '黔豆', val: 0, key: 'qd' },
+  { label: '优惠券', val: 0, key: 'coupon' },
+  { label: '收藏', val: 0, key: 'fav' },
+  { label: '足迹', val: 0, key: 'foot' }
 ])
 
 const badges = ref([
-  { name: '初来乍到', char: '初', bg: 'linear-gradient(135deg, #74b9ff, #0984e3)', on: true },
-  { name: '三线学者', char: '线', bg: 'linear-gradient(135deg, #ff6b6b, #ee5a24)', on: true },
-  { name: '美食猎人', char: '味', bg: 'linear-gradient(135deg, #ffd32a, #f6b93b)', on: true },
+  { name: '初来乍到', char: '初', bg: 'linear-gradient(135deg, #74b9ff, #0984e3)', on: false },
+  { name: '三线学者', char: '线', bg: 'linear-gradient(135deg, #ff6b6b, #ee5a24)', on: false },
+  { name: '美食猎人', char: '味', bg: 'linear-gradient(135deg, #ffd32a, #f6b93b)', on: false },
   { name: '凉都达人', char: '凉', bg: 'linear-gradient(135deg, #55efc4, #00b894)', on: false },
   { name: '文创大师', char: '创', bg: 'linear-gradient(135deg, #a29bfe, #6c5ce7)', on: false },
   { name: '全景解锁', char: '全', bg: 'linear-gradient(135deg, #FFD93D, #F39C12)', on: false }
 ])
 
 const orderTypes = ref([
-  { name: '待付款', char: '付', bg: 'linear-gradient(135deg, #74b9ff, #0984e3)', count: 1 },
-  { name: '待使用', char: '票', bg: 'linear-gradient(135deg, #55efc4, #00b894)', count: 2 },
+  { name: '待付款', char: '付', bg: 'linear-gradient(135deg, #74b9ff, #0984e3)', count: 0 },
+  { name: '待使用', char: '票', bg: 'linear-gradient(135deg, #55efc4, #00b894)', count: 0 },
   { name: '待评价', char: '评', bg: 'linear-gradient(135deg, #ffd32a, #f6b93b)', count: 0 },
   { name: '退款', char: '退', bg: 'linear-gradient(135deg, #dfe6e9, #b2bec3)', count: 0 }
 ])
@@ -218,10 +221,61 @@ onMounted(() => {
     isLogin.value = true
     userName.value = u.nickname || '微信用户'
     userAvatar.value = u.avatarUrl || u.avatar || ''
+    loadUserData(u.userId)
   }
 })
 
-const goSet = () => uni.showToast({ title: '设置', icon: 'none' })
+const loadUserData = async (userId) => {
+  if (!userId) return
+  try {
+    // 并行加载：签到状态、收藏、研学护照、订单
+    const [checkInRes, favRes, passportRes, ordersRes] = await Promise.all([
+      getCheckInStatus(userId).catch(() => null),
+      getFavorites(userId).catch(() => []),
+      fetchPassport(userId).catch(() => null),
+      fetchOrders(userId, null).catch(() => [])
+    ])
+
+    // 更新黔豆
+    if (checkInRes && checkInRes.totalPoints != null) {
+      dataRow.value[0].val = checkInRes.totalPoints
+    } else if (passportRes && passportRes.totalPoints != null) {
+      dataRow.value[0].val = passportRes.totalPoints
+    }
+
+    // 更新收藏数
+    if (Array.isArray(favRes)) {
+      dataRow.value[2].val = favRes.length
+    }
+
+    // 更新打卡景点数
+    if (passportRes && passportRes.checkedSpots != null) {
+      checkedSpots.value = passportRes.checkedSpots
+    }
+
+    // 更新徽章
+    if (passportRes && Array.isArray(passportRes.badges)) {
+      badges.value = passportRes.badges.map(b => ({
+        name: b.name || '',
+        char: b.char || b.name?.substring(0, 1) || '',
+        bg: b.bg || 'linear-gradient(135deg, #74b9ff, #0984e3)',
+        on: !!b.unlocked
+      }))
+    }
+
+    // 更新订单数
+    if (Array.isArray(ordersRes)) {
+      orderTypes.value[0].count = ordersRes.filter(o => o.order?.status === 'pending').length
+      orderTypes.value[1].count = ordersRes.filter(o => o.order?.status === 'paid').length
+      orderTypes.value[2].count = ordersRes.filter(o => o.order?.status === 'completed').length
+      orderTypes.value[3].count = ordersRes.filter(o => o.order?.status === 'cancelled').length
+    }
+  } catch (e) {
+    // 静默失败，保留默认值
+  }
+}
+
+const goSet = () => uni.navigateTo({ url: '/pages/profile/settings' })
 
 // ---- 登录（简化：只做 wx.login → 后端换 token，不再调废弃的 getUserProfile） ----
 const goLogin = () => {
@@ -245,6 +299,7 @@ const goLogin = () => {
           userAvatar.value = data.avatarUrl || data.avatar || ''
           uni.hideLoading()
           uni.showToast({ title: '登录成功', icon: 'success' })
+          loadUserData(data.userId)
 
           // 登录成功后，如果资料不完善则自动弹出完善资料弹窗
           if (needSetupProfile(data)) {
@@ -364,7 +419,17 @@ const doCheckIn = async () => {
     uni.showToast({ title: err.message || '签到失败', icon: 'none' })
   }
 }
-const onDataTap = (d) => uni.showToast({ title: d.label + '详情开发中', icon: 'none' })
+const onDataTap = (d) => {
+  if (d.key === 'fav') {
+    uni.navigateTo({ url: '/pages/profile/favorites' })
+  } else if (d.key === 'qd') {
+    uni.navigateTo({ url: '/pages/red-study/index' })
+  } else if (d.key === 'foot') {
+    uni.navigateTo({ url: '/pages/search/index' })
+  } else if (d.key === 'coupon') {
+    uni.switchTab({ url: '/pages/shop/index' })
+  }
+}
 const goPassport = () => uni.navigateTo({ url: '/pages/red-study/index' })
 const goOrders = () => uni.navigateTo({ url: '/pages/order/list' })
 const goOrder = (o) => {
@@ -380,6 +445,12 @@ const onMenu = (m) => {
     uni.navigateTo({ url: '/pages/itinerary/list' })
   } else if (m.name === 'AI 对话历史') {
     uni.navigateTo({ url: '/pages/digital-human/index' })
+  } else if (m.name === '地址管理') {
+    uni.navigateTo({ url: '/pages/profile/address' })
+  } else if (m.name === '意见反馈') {
+    uni.navigateTo({ url: '/pages/profile/feedback' })
+  } else if (m.name === '联系客服') {
+    uni.makePhoneCall({ phoneNumber: '0858-8888888' }).catch(() => {})
   } else {
     uni.showToast({ title: m.name + '开发中', icon: 'none' })
   }

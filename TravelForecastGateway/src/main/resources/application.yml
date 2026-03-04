@@ -9,9 +9,9 @@ spring:
   # Redis配置（用于限流和缓存）
   data:
     redis:
-      host: 39.97.232.141
-      port: 6379
-      password:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
       database: 2  # 网关使用独立的Redis数据库
       timeout: 3000
       lettuce:
@@ -37,13 +37,15 @@ spring:
     gateway:
       # 全局CORS配置
       globalcors:
+        add-to-simple-url-handler-mapping: true
         cors-configurations:
           '[/**]':
             allowed-origins:
-              - "http://localhost:3000"      # 前端开发地址
-              - "http://localhost:5173"       # Vite开发地址
-              - "http://localhost:8081"       # 其他前端服务
-              - "*"                           # 生产环境请指定具体域名
+              - "http://39.97.232.141"
+              - "http://39.97.232.141:80"
+              - "http://39.97.232.141:8888"
+              - "http://localhost:3000"
+              - "http://localhost:5173"
             allowed-methods:
               - GET
               - POST
@@ -55,7 +57,7 @@ spring:
               - "*"
             allow-credentials: true
             max-age: 3600
-      
+
       # 路由配置
       routes:
         # ==================== 业务后端服务 ====================
@@ -64,12 +66,7 @@ spring:
           predicates:
             - Path=/api/**
           filters:
-            - StripPrefix=1  # 去掉 /api 前缀，转发到 http://localhost:8080/**
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 100  # 每秒允许的请求数
-                redis-rate-limiter.burstCapacity: 200  # 突发容量
-                redis-rate-limiter.requestedTokens: 1
+            # 注意: Backend context-path=/api，不需要StripPrefix
             - name: Retry
               args:
                 retries: 3
@@ -87,12 +84,7 @@ spring:
           predicates:
             - Path=/ai-api/**
           filters:
-            - StripPrefix=1  # 去掉 /ai-api 前缀
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 50   # AI服务限流更严格
-                redis-rate-limiter.burstCapacity: 100
-                redis-rate-limiter.requestedTokens: 1
+            # 注意: AI Backend context-path=/ai-api，不需要StripPrefix
             - name: Retry
               args:
                 retries: 2
@@ -106,11 +98,6 @@ spring:
             - Path=/miniprogram-api/**
           filters:
             - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 80
-                redis-rate-limiter.burstCapacity: 150
-                redis-rate-limiter.requestedTokens: 1
         
         # ==================== Python预测服务 ====================
         - id: prediction-service
@@ -119,11 +106,6 @@ spring:
             - Path=/prediction-api/**
           filters:
             - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 30   # 预测服务计算密集，限流更严格
-                redis-rate-limiter.burstCapacity: 60
-                redis-rate-limiter.requestedTokens: 1
             - name: Retry
               args:
                 retries: 2
@@ -137,11 +119,6 @@ spring:
             - Path=/digital-human-api/**
           filters:
             - StripPrefix=1
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 40
-                redis-rate-limiter.burstCapacity: 80
-                redis-rate-limiter.requestedTokens: 1
         
         # ==================== WebSocket代理（数字人） ====================
         - id: digital-human-websocket
@@ -166,20 +143,33 @@ spring:
 gateway:
   # JWT配置（与业务后端保持一致）
   jwt:
-    secret: TravelPredictionSecretKey2025LiupanshuiTourismSystem
+    secret: ${JWT_SECRET:TravelPredictionSecretKey2025LiupanshuiTourismSystem}
     expiration: 604800
     token-prefix: Bearer
     header: Authorization
   
   # 认证白名单（不需要JWT验证的路径）
+  # 与后端 WebConfig.java 的 JWT 拦截器保持一致：只拦截特定路径，其余放行
   whitelist:
-    - /api/auth/login
-    - /api/auth/register
-    - /api/auth/captcha
-    - /api/auth/wechat/login
+    - /api/auth/**
+    - /api/captcha
+    - /api/content/**
+    - /api/scenics/**
+    - /api/scenic-spots/**
+    - /api/news/**
+    - /api/reviews
+    - /api/reviews/scenic/**
+    - /api/announcements/**
+    - /api/dashboard/**
+    - /api/prediction/**
+    - /api/policy/**
+    - /api/oss/proxy/**
+    - /api/images/**
     - /miniprogram-api/**
-    - /prediction-api/health
-    - /digital-human-api/health
+    - /prediction-api/**
+    - /digital-human-api/**
+    - /ai-api/**
+    - /ws/**
     - /actuator/**
   
   # 限流配置

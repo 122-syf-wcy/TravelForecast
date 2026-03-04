@@ -14,9 +14,9 @@ spring:
   # 数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://39.97.232.141:3306/travel_prediction?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: TravelDB2025!
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:travel_prediction}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:}
     # 连接池配置
     hikari:
       minimum-idle: 5
@@ -49,8 +49,8 @@ spring:
   # 邮件配置（用于管理员审核通知）
   mail:
     host: smtp.qq.com
-    username: syf120508@foxmail.com
-    password: ${MAIL_AUTH_CODE:please_set_mail_auth_code}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_AUTH_CODE:}
     properties:
       mail:
         smtp:
@@ -62,9 +62,9 @@ spring:
   # Redis配置（用于缓存AI响应，提升性能）
   data:
     redis:
-      host: 39.97.232.141
-      port: 6379
-      password:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
       database: 0
       timeout: 3000
       lettuce:
@@ -113,7 +113,7 @@ mybatis-plus:
 # JWT配置
 jwt:
   # 密钥（生产环境建议使用更复杂的密钥）
-  secret: TravelPredictionSecretKey2025LiupanshuiTourismSystem
+  secret: ${JWT_SECRET:TravelPredictionSecretKey2025LiupanshuiTourismSystem}
   # Token有效期（7天，单位：秒）
   expiration: 604800
   # Token前缀
@@ -165,7 +165,7 @@ app:
 # DashScope（通义千问）配置
 dashscope:
   # 直接使用本地配置的 API Key（仅本地环境使用，勿提交到公共仓库）
-  api-key: sk-c444b733ee0c4e29a215b07cd875929f
+  api-key: ${DASHSCOPE_API_KEY:}
 
 # Python预测服务配置
 python:
@@ -176,7 +176,7 @@ python:
 # 高德地图配置
 amap:
   api:
-    key: 339146bdb9038c3caf85a7aca9c9bb7f  # 高德地图Web服务API Key
+    key: ${AMAP_API_KEY:}
 
 # 阿里云OSS配置
 oss:
@@ -186,5 +186,5 @@ oss:
   domain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
   publicDomain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
   # 改为你新的有效 AccessKey（请从阿里云控制台获取）
-  access-key-id: LTAI5t7AvM8aEFV9rxT7wVY6
-  access-key-secret: SCNTM1T0KYdcqaggeOW0g4uY396OJF
+  access-key-id: ${OSS_ACCESS_KEY_ID:}
+  access-key-secret: ${OSS_ACCESS_KEY_SECRET:}

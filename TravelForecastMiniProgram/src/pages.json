@@ -45,6 +45,12 @@
 			}
 		},
 		{
+			"path": "pages/life-service/index",
+			"style": {
+				"navigationBarTitleText": "本地服务"
+			}
+		},
+		{
 			"path": "pages/digital-human/index",
 			"style": {
 				"navigationStyle": "custom",
@@ -67,6 +73,30 @@
 			"path": "pages/itinerary/list",
 			"style": {
 				"navigationBarTitleText": "我的行程"
+			}
+		},
+		{
+			"path": "pages/profile/settings",
+			"style": {
+				"navigationBarTitleText": "设置"
+			}
+		},
+		{
+			"path": "pages/profile/address",
+			"style": {
+				"navigationBarTitleText": "地址管理"
+			}
+		},
+		{
+			"path": "pages/profile/feedback",
+			"style": {
+				"navigationBarTitleText": "意见反馈"
+			}
+		},
+		{
+			"path": "pages/profile/favorites",
+			"style": {
+				"navigationBarTitleText": "我的收藏"
 			}
 		}
 	],

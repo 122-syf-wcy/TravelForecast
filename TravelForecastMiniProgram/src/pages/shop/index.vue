@@ -93,7 +93,7 @@
         <text>{{ bubbleMsg }}</text>
       </view>
       <view class="ai-fab-btn">
-        <text class="ai-fab-label">AI</text>
+        <image class="ai-fab-avatar" src="/static/dh-avatar.png" mode="aspectFill" />
       </view>
     </view>
 
@@ -116,11 +116,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { fetchProducts, addToCart, fetchCart } from '@/api/shop'
+import { getCheckInStatus } from '@/api/user'
 import { resolveAssetUrl } from '@/utils/url'
 
 const stBar = ref(20)
 const cartNum = ref(0)
-const qdBalance = ref(120)
+const qdBalance = ref(0)
 const curTab = ref(0)
 const showBubble = ref(true)
 const bubbleMsg = ref('刺梨汁维C很高哦')
@@ -191,7 +192,17 @@ onMounted(() => {
   setTimeout(() => { showBubble.value = false }, 4000)
   loadProducts()
   loadCartCount()
+  loadQdBalance()
 })
+
+const loadQdBalance = async () => {
+  const userId = getUserId()
+  if (!userId) return
+  try {
+    const res = await getCheckInStatus(userId)
+    if (res && res.totalPoints != null) qdBalance.value = res.totalPoints
+  } catch (e) { /* keep default */ }
+}
 
 const goCart = async () => {
   const userId = getUserId()
@@ -218,8 +229,8 @@ const goCart = async () => {
   } catch (e) { uni.showToast({ title: '加载购物车失败', icon: 'none' }) }
 }
 const onSearch = () => uni.navigateTo({ url: '/pages/search/index' })
-const goQd = () => uni.showToast({ title: '黔豆中心即将开放', icon: 'none' })
-const onShip = () => uni.showToast({ title: '一键寄回家·即将上线', icon: 'none' })
+const goQd = () => uni.navigateTo({ url: '/pages/red-study/index' })
+const onShip = () => uni.navigateTo({ url: '/pages/profile/address' })
 const onGoods = (g) => {
   uni.navigateTo({ url: `/pages/shop/detail?id=${g.id}` })
 }

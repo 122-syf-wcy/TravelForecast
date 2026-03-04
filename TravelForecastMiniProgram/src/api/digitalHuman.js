@@ -110,7 +110,7 @@ export const generateConversationId = () => {
 export const uploadVoice = (tempFilePath) => {
   return new Promise((resolve, reject) => {
     uni.uploadFile({
-      url: 'http://localhost:5000/api/stt', // 调用Python后端的STT接口
+      url: AI_API_BASE_URL + '/speech/stt', // 通过AI后端代理STT
       filePath: tempFilePath,
       name: 'file',
       success: (res) => {

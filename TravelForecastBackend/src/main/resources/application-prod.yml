@@ -1,3 +1,8 @@
+# 应用环境
+app:
+  env: prod
+  frontend-url: http://39.97.232.141
+
 server:
   port: 8080
   servlet:
@@ -112,7 +117,7 @@ management:
 # 跨域配置
 cors:
   allowed-origins:
-    - http://8.137.85.127
+    - http://39.97.232.141
     - http://localhost:3000
     - http://localhost:8080
   allowed-methods:
