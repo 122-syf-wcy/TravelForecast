@@ -40,20 +40,32 @@
     </view>
 
     <!-- 研学护照 -->
-    <view class="pp-sec">
+    <view class="pp-sec" @tap="goPassport">
       <view class="pp-hd">
-        <text class="pp-title">研学护照</text>
-        <view class="pp-more" @tap="goPassport">
+        <view class="pp-left">
+          <view class="pp-icon-wrap">
+            <text class="pp-icon-emoji">📖</text>
+          </view>
+          <view class="pp-hd-info">
+            <text class="pp-title">研学护照</text>
+            <text class="pp-subtitle">已解锁 {{ unlockedCount }}/{{ badges.length }} 枚徽章</text>
+          </view>
+        </view>
+        <view class="pp-more">
           <text class="pp-more-t">查看全部 ></text>
+        </view>
+      </view>
+      <view class="pp-progress-wrap">
+        <view class="pp-progress-bar">
+          <view class="pp-progress-fill" :style="{ width: (unlockedCount / badges.length * 100) + '%' }" />
         </view>
       </view>
       <view class="badge-grid">
         <view class="badge" v-for="(b, i) in badges" :key="i" :class="{ 'badge-off': !b.on }">
-          <view class="badge-icon" :style="{ background: b.on ? b.bg : '#e0e0e0' }">
+          <view class="badge-icon" :style="{ background: b.on ? b.bg : '' }">
             <text class="badge-char">{{ b.char }}</text>
           </view>
           <text class="badge-name">{{ b.name }}</text>
-          <text class="badge-st">{{ b.on ? '已解锁' : '未解锁' }}</text>
         </view>
       </view>
     </view>
@@ -147,7 +159,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { wechatLogin, uploadAvatar } from '@/api/auth'
 import { checkIn, getCheckInStatus, getFavorites } from '@/api/user'
 import { fetchPassport } from '@/api/study'
@@ -175,13 +187,15 @@ const dataRow = ref([
 ])
 
 const badges = ref([
-  { name: '初来乍到', char: '初', bg: 'linear-gradient(135deg, #74b9ff, #0984e3)', on: false },
-  { name: '三线学者', char: '线', bg: 'linear-gradient(135deg, #ff6b6b, #ee5a24)', on: false },
-  { name: '美食猎人', char: '味', bg: 'linear-gradient(135deg, #ffd32a, #f6b93b)', on: false },
-  { name: '凉都达人', char: '凉', bg: 'linear-gradient(135deg, #55efc4, #00b894)', on: false },
-  { name: '文创大师', char: '创', bg: 'linear-gradient(135deg, #a29bfe, #6c5ce7)', on: false },
-  { name: '全景解锁', char: '全', bg: 'linear-gradient(135deg, #FFD93D, #F39C12)', on: false }
+  { name: '初来乍到', char: '🎒', bg: 'linear-gradient(135deg, #74b9ff, #0984e3)', on: true },
+  { name: '三线学者', char: '🏭', bg: 'linear-gradient(135deg, #ff6b6b, #ee5a24)', on: false },
+  { name: '美食猎人', char: '🍜', bg: 'linear-gradient(135deg, #ffd32a, #f6b93b)', on: true },
+  { name: '凉都达人', char: '⛰️', bg: 'linear-gradient(135deg, #55efc4, #00b894)', on: false },
+  { name: '文创大师', char: '🎨', bg: 'linear-gradient(135deg, #a29bfe, #6c5ce7)', on: false },
+  { name: '全景解锁', char: '🏆', bg: 'linear-gradient(135deg, #FFD93D, #F39C12)', on: false }
 ])
+
+const unlockedCount = computed(() => badges.value.filter(b => b.on).length)
 
 const orderTypes = ref([
   { name: '待付款', char: '付', bg: 'linear-gradient(135deg, #74b9ff, #0984e3)', count: 0 },
@@ -430,7 +444,7 @@ const onDataTap = (d) => {
     uni.switchTab({ url: '/pages/shop/index' })
   }
 }
-const goPassport = () => uni.navigateTo({ url: '/pages/red-study/index' })
+const goPassport = () => uni.navigateTo({ url: '/pages/passport/index' })
 const goOrders = () => uni.navigateTo({ url: '/pages/order/list' })
 const goOrder = (o) => {
   let t = 0
@@ -499,25 +513,37 @@ const onAi = () => uni.navigateTo({ url: '/pages/digital-human/index' })
 
 /* 研学护照 */
 .pp-sec { margin: -10px 16px 0; background: #fff; border-radius: 18px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.07); position: relative; z-index: 10; }
-.pp-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.pp-title { font-size: 16px; font-weight: 700; color: #1A1A2E; }
-.pp-more {}
-.pp-more-t { font-size: 12px; color: #999; }
-
-.badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.badge { display: flex; flex-direction: column; align-items: center; }
-.badge-off { opacity: 0.45; }
-.badge-off .badge-icon { filter: grayscale(100%); }
-.badge-icon {
-  width: 48px; height: 48px; border-radius: 14px;
+.pp-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.pp-left { display: flex; align-items: center; }
+.pp-icon-wrap {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: linear-gradient(135deg, #2A9D8F, #1A6B5A);
   display: flex; align-items: center; justify-content: center;
-  margin-bottom: 5px; box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  margin-right: 10px; box-shadow: 0 2px 6px rgba(42,157,143,0.3);
+}
+.pp-icon-emoji { font-size: 20px; }
+.pp-hd-info { display: flex; flex-direction: column; }
+.pp-title { font-size: 15px; font-weight: 700; color: #1A1A2E; line-height: 1.3; }
+.pp-subtitle { font-size: 11px; color: #999; margin-top: 2px; }
+.pp-more {}
+.pp-more-t { font-size: 12px; color: #2A9D8F; }
+.pp-progress-wrap { margin-bottom: 14px; }
+.pp-progress-bar { height: 4px; background: #f0f0f0; border-radius: 2px; overflow: hidden; }
+.pp-progress-fill { height: 100%; background: linear-gradient(90deg, #2A9D8F, #55efc4); border-radius: 2px; transition: width 0.5s; min-width: 4px; }
+
+.badge-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.badge { display: flex; flex-direction: column; align-items: center; }
+.badge-off { opacity: 0.35; }
+.badge-off .badge-icon { background: #e8e8e8 !important; filter: grayscale(100%); }
+.badge-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   position: relative; overflow: hidden;
 }
-.badge-icon::after { content: ''; position: absolute; top: -22%; left: -12%; width: 46%; height: 46%; background: rgba(255,255,255,0.3); border-radius: 50%; }
-.badge-char { font-size: 20px; font-weight: 800; color: #fff; position: relative; z-index: 2; }
-.badge-name { font-size: 11px; font-weight: 600; color: #333; margin-bottom: 1px; }
-.badge-st { font-size: 10px; color: #bbb; }
+.badge-icon::after { content: ''; position: absolute; top: -22%; left: -12%; width: 46%; height: 46%; background: rgba(255,255,255,0.25); border-radius: 50%; }
+.badge-char { font-size: 20px; position: relative; z-index: 2; }
+.badge-name { font-size: 10px; font-weight: 500; color: #666; white-space: nowrap; }
 
 /* 订单 */
 .order-sec { margin: 12px 16px 0; background: #fff; border-radius: 18px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04); }

@@ -98,6 +98,14 @@
 			"style": {
 				"navigationBarTitleText": "我的收藏"
 			}
+		},
+		{
+			"path": "pages/passport/index",
+			"style": {
+				"navigationBarTitleText": "研学护照",
+				"navigationBarBackgroundColor": "#2A9D8F",
+				"navigationBarTextStyle": "white"
+			}
 		}
 	],
 	"globalStyle": {

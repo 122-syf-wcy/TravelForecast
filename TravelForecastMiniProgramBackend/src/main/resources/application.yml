@@ -15,12 +15,12 @@ spring:
       schema-locations: classpath:schema.sql
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:travel_prediction}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://${DB_HOST:39.97.232.141}:${DB_PORT:3306}/${DB_NAME:travel_prediction}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: ${DB_USER:root}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD:<REDACTED_DB_PASSWORD>}
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:39.97.232.141}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
       database: 3
@@ -35,8 +35,8 @@ oss:
   region: cn-beijing
   bucket: smarttourism717
   publicDomain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
-  access-key-id: ${OSS_ACCESS_KEY_ID:}
-  access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
+  access-key-id: ${OSS_ACCESS_KEY_ID:<REDACTED_OSS_ACCESS_KEY_ID>}
+  access-key-secret: ${OSS_ACCESS_KEY_SECRET:<REDACTED_OSS_ACCESS_KEY_SECRET>}
 
 app:
   base-url: http://localhost:8082
@@ -47,8 +47,8 @@ jwt:
 
 wechat:
   miniapp:
-    appid: ${WECHAT_APPID:}
-    appsecret: ${WECHAT_APPSECRET:}
+    appid: ${WECHAT_APPID:wx9569d09c12f8de06}
+    appsecret: ${WECHAT_APPSECRET:<REDACTED_WECHAT_APPSECRET>}
 
 # 日志配置
 logging:

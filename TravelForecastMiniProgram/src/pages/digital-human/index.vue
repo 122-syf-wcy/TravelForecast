@@ -12,18 +12,40 @@
     </view>
 
     <view class="dh-container">
-      <!-- 状态栏 -->
-      <view class="dh-status-bar">
-        <view class="status-dot" :class="{ 'dot-busy': isLoading }" />
-        <text class="status-txt">{{ statusText }}</text>
+      <!-- 数字人视频区域 -->
+      <view class="dh-video-area">
+        <view class="dh-av-wrap" :class="{ 'av-speaking': isSpeaking }">
+          <video
+            id="avatarVideo"
+            class="dh-video"
+            src="https://smarttourism717.oss-cn-beijing.aliyuncs.com/digital-human/avatar.mp4"
+            poster="https://smarttourism717.oss-cn-beijing.aliyuncs.com/digital-human/dh-avatar.png"
+            :loop="true"
+            :muted="true"
+            :controls="false"
+            :show-center-play-btn="false"
+            :show-play-btn="false"
+            :show-fullscreen-btn="false"
+            :show-progress="false"
+            :enable-progress-gesture="false"
+            object-fit="cover"
+          />
+        </view>
+        <view class="dh-info">
+          <text class="dh-name">黔小游</text>
+          <view class="dh-status-row">
+            <view class="status-dot" :class="{ 'dot-busy': isLoading }" />
+            <text class="status-txt">{{ statusText }}</text>
+          </view>
+        </view>
       </view>
 
-      <!-- 聊天区域（全屏） -->
+      <!-- 聊天区域 -->
       <view class="dh-chat">
         <scroll-view scroll-y class="chat-list" :scroll-into-view="lastId" :scroll-with-animation="true">
           <view class="msg" v-for="(m, i) in msgs" :key="i" :id="'msg-' + i" :class="{ 'msg-me': m.isMe }">
-            <view class="avatar" :class="{ 'avatar-speaking': m.playing }" v-if="!m.isMe">
-              <image class="avatar-img" src="/static/dh-avatar-poster.jpg" mode="aspectFill" />
+            <view class="avatar" v-if="!m.isMe">
+              <image class="avatar-img" src="/static/dh-avatar.png" mode="aspectFill" />
             </view>
             <view class="bubble" :class="{ 'bubble-loading': m.loading }">
               <view class="typing-dots" v-if="m.loading">
@@ -31,7 +53,6 @@
               </view>
               <text class="bubble-t" v-else>{{ m.text }}</text>
             </view>
-            <!-- 语音播放按钮 -->
             <view class="voice-btn" v-if="!m.isMe && !m.loading && m.text" @tap="playVoice(m)">
               <view class="voice-icon" :class="{ 'voice-playing': m.playing }">
                 <view class="vi-bar" v-for="j in 3" :key="j" />
@@ -110,8 +131,21 @@ const quickQuestions = [
   '梅花山明天人多吗？'
 ]
 
-const stopAllPlaying = () => {
+let videoCtx = null
+
+const startVideoPlay = () => {
+  isSpeaking.value = true
+  if (!videoCtx) videoCtx = uni.createVideoContext('avatarVideo')
+  if (videoCtx) videoCtx.play()
+}
+
+const stopVideoPlay = () => {
   isSpeaking.value = false
+  if (videoCtx) videoCtx.pause()
+}
+
+const stopAllPlaying = () => {
+  stopVideoPlay()
   msgs.value.forEach(m => { m.playing = false })
 }
 
@@ -187,12 +221,12 @@ const sendMsg = async () => {
       }
     }
 
-    // 同时展示文字和播放语音
     msgs.value = msgs.value.filter(m => !m.loading)
     msgs.value.push({ text: replyText, isMe: false, playing: !!audioData })
     scrollToBottom()
 
     if (audioData) {
+      startVideoPlay()
       playBase64Audio(audioData)
     }
   } catch (err) {
@@ -216,8 +250,8 @@ const autoPlayVoice = async (text) => {
     statusText.value = '正在合成语音...'
     const res = await textToSpeech(text)
     if (res.audio) {
+      startVideoPlay()
       playBase64Audio(res.audio)
-      // 标记最后一条AI消息为播放中
       const lastAiMsg = [...msgs.value].reverse().find(m => !m.isMe && !m.loading)
       if (lastAiMsg) lastAiMsg.playing = true
     }
@@ -230,7 +264,6 @@ const autoPlayVoice = async (text) => {
 
 const playVoice = async (msg) => {
   if (msg.playing) {
-    // 正在播放则停止
     if (innerAudioCtx.value) innerAudioCtx.value.stop()
     stopAllPlaying()
     return
@@ -242,10 +275,12 @@ const playVoice = async (msg) => {
     const res = await textToSpeech(msg.text)
     if (res.audio) {
       msg.playing = true
+      startVideoPlay()
       playBase64Audio(res.audio)
     }
   } catch (e) {
     uni.showToast({ title: '语音播放失败', icon: 'none' })
+    stopVideoPlay()
   } finally {
     statusText.value = '黔小游在线中'
   }
@@ -276,7 +311,7 @@ const playBase64Audio = (base64Data) => {
     // #endif
   } catch (e) {
     console.error('音频播放失败:', e)
-    isSpeaking.value = false
+    stopVideoPlay()
   }
 }
 
@@ -366,18 +401,40 @@ if (recorderManager) {
 
 .dh-container { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
 
-/* 状态栏 */
-.dh-status-bar {
-  display: flex; align-items: center; padding: 6px 16px;
-  background: rgba(13, 27, 42, 0.8);
+/* 数字人视频区域 */
+.dh-video-area {
+  display: flex; align-items: center; padding: 12px 16px;
+  background: linear-gradient(180deg, #0d1b2a, #162d44);
 }
+.dh-av-wrap {
+  width: 74px; height: 74px;
+  border-radius: 16px;
+  margin-right: 14px; flex-shrink: 0;
+  border: 2px solid rgba(42, 157, 143, 0.3);
+  transition: border-color 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.dh-av-wrap.av-speaking {
+  border-color: #2A9D8F;
+  box-shadow: 0 0 12px rgba(42, 157, 143, 0.5);
+  animation: speakGlow 1.5s ease-in-out infinite;
+}
+.dh-video { width: 74px; height: 74px; display: block; }
+@keyframes speakGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(42, 157, 143, 0.3); }
+  50% { box-shadow: 0 0 16px rgba(42, 157, 143, 0.7); }
+}
+.dh-info { flex: 1; }
+.dh-name { display: block; font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.dh-status-row { display: flex; align-items: center; }
 .status-dot {
   width: 6px; height: 6px; background: #00b894; border-radius: 50%;
   margin-right: 6px; box-shadow: 0 0 5px #00b894;
 }
 .status-dot.dot-busy { background: #ffc048; box-shadow: 0 0 5px #ffc048; animation: pulse 1s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-.status-txt { color: rgba(255,255,255,0.8); font-size: 12px; }
+.status-txt { color: rgba(255,255,255,0.7); font-size: 12px; }
 
 /* 聊天区域（全屏） */
 .dh-chat {
