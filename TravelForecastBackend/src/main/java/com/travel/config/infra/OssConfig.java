@@ -29,24 +29,33 @@ public class OssConfig {
     private String accessKeySecret;
 
     @Bean
-    public OSS ossClient() throws ClientException {
+    public OSS ossClient() {
         log.info("初始化OSS客户端: endpoint={}, region={}", endpoint, region);
         
-        // 使用V1签名，更兼容
         ClientBuilderConfiguration conf = new ClientBuilderConfiguration();
         conf.setSignatureVersion(SignVersion.V1);
         
-        // 优先使用配置文件中的AccessKey，如果没有则使用环境变量
         if (accessKeyId != null && !accessKeyId.isEmpty() && 
             accessKeySecret != null && !accessKeySecret.isEmpty()) {
             log.info("使用配置文件中的AccessKey: accessKeyId={}", accessKeyId.substring(0, 8) + "***");
-            // 使用简单的构造方式
             return new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret, conf);
-        } else {
-            log.info("使用环境变量中的AccessKey");
-            EnvironmentVariableCredentialsProvider provider = CredentialsProviderFactory.newEnvironmentVariableCredentialsProvider();
-            return new OSSClientBuilder().build(endpoint, provider, conf);
         }
+        
+        String envKeyId = System.getenv("OSS_ACCESS_KEY_ID");
+        String envKeySecret = System.getenv("OSS_ACCESS_KEY_SECRET");
+        if (envKeyId != null && !envKeyId.isEmpty() &&
+            envKeySecret != null && !envKeySecret.isEmpty()) {
+            log.info("使用环境变量中的AccessKey");
+            try {
+                EnvironmentVariableCredentialsProvider provider = CredentialsProviderFactory.newEnvironmentVariableCredentialsProvider();
+                return new OSSClientBuilder().build(endpoint, provider, conf);
+            } catch (Exception e) {
+                log.warn("通过环境变量初始化OSS失败: {}", e.getMessage());
+            }
+        }
+        
+        log.warn("OSS AccessKey 未配置，OSS 功能将不可用（本地开发可忽略）");
+        return new OSSClientBuilder().build(endpoint, "placeholder", "placeholder", conf);
     }
 }
 

@@ -66,7 +66,7 @@
         <text class="cb-sub">让黔小游带你玩转凉都</text>
         <view class="cb-btn">立即体验</view>
         <view class="cb-avatar">
-          <text class="cb-av-text">游</text>
+          <image class="cb-av-img" src="/static/dh-avatar.png" mode="aspectFill" />
         </view>
         <view class="cb-deco1" />
         <view class="cb-deco2" />
@@ -596,17 +596,15 @@ const onAiTap = () => {
 .cb-avatar {
   position: absolute;
   right: 10px; bottom: 10px;
-  width: 60px; height: 60px;
+  width: 70px; height: 70px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.4);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
-.cb-av-text {
-  font-size: 28px;
-  font-weight: 900;
-  color: rgba(255,255,255,0.7);
+.cb-av-img {
+  width: 100%; height: 100%;
+  border-radius: 50%;
 }
 .cb-deco1 {
   position: absolute;

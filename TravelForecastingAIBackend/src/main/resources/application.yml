@@ -14,9 +14,9 @@ spring:
   # 数据源配置 (共享业务数据库)
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:travel_prediction}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST:39.97.232.141}:${DB_PORT:3306}/${DB_NAME:travel_prediction}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: ${DB_USER:root}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD:TravelDB2025!}
     hikari:
       minimum-idle: 5
       maximum-pool-size: 15
@@ -41,7 +41,7 @@ spring:
   # Redis配置 (用于缓存AI响应和会话上下文)
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:39.97.232.141}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
       database: 1  # 使用独立的Redis数据库，与业务后端隔离
@@ -81,7 +81,7 @@ jwt:
 
 # DashScope（通义千问）配置
 dashscope:
-  api-key: ${DASHSCOPE_API_KEY:}
+  api-key: ${DASHSCOPE_API_KEY:sk-c444b733ee0c4e29a215b07cd875929f}
   # qwen-turbo 比 qwen-plus 快3-5倍，适合日常聊天
   default-model: qwen-turbo
   planning-model: qwen-turbo
@@ -110,7 +110,7 @@ prediction-service:
 # 高德地图配置
 amap:
   api:
-    key: ${AMAP_API_KEY:}
+    key: ${AMAP_API_KEY:339146bdb9038c3caf85a7aca9c9bb7f}
 
 # ==================== AI 功能模块配置 ====================
 

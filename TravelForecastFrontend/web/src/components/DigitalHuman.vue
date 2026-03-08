@@ -171,6 +171,8 @@ let useHttpFallback = false  // WebSocket全部失败时降级为HTTP
 // ========== AudioContext 解决浏览器自动播放限制 ==========
 let audioCtx: AudioContext | null = null
 let currentSource: AudioBufferSourceNode | null = null
+let pendingAudioBlobs: Blob[] = []
+let audioUnlocked = false
 
 const ensureAudioContext = (): AudioContext => {
   if (!audioCtx) {
@@ -179,11 +181,69 @@ const ensureAudioContext = (): AudioContext => {
   return audioCtx
 }
 
-// 用户在页面上任意一次点击/触摸/按键即永久解锁音频
 const unlockAudioContext = () => {
+  if (audioUnlocked) return
   const ctx = ensureAudioContext()
   if (ctx.state === 'suspended') {
-    ctx.resume().then(() => console.log('[Audio] 音频上下文已解锁'))
+    ctx.resume().then(() => {
+      console.log('[Audio] 音频上下文已解锁')
+      audioUnlocked = true
+      drainPendingAudio()
+    })
+  } else {
+    audioUnlocked = true
+    drainPendingAudio()
+  }
+}
+
+const drainPendingAudio = async () => {
+  if (pendingAudioBlobs.length === 0) return
+  const blob = pendingAudioBlobs.shift()!
+  pendingAudioBlobs = []
+  console.log('[Audio] 播放缓存的音频, size:', blob.size)
+  await actualPlayAudio(blob)
+}
+
+const actualPlayAudio = async (blob: Blob) => {
+  try {
+    const ctx = ensureAudioContext()
+    if (ctx.state === 'suspended') await ctx.resume()
+
+    const arrayBuffer = await blob.arrayBuffer()
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
+
+    if (currentSource) { try { currentSource.stop() } catch {} }
+    if (currentAudio) { currentAudio.pause(); currentAudio = null }
+
+    currentSource = ctx.createBufferSource()
+    currentSource.buffer = audioBuffer
+    currentSource.connect(ctx.destination)
+    currentSource.start(0)
+    console.log('AudioContext 音频开始播放')
+    startSpeaking()
+
+    currentSource.onended = () => {
+      console.log('音频播放结束')
+      stopSpeaking()
+    }
+  } catch (e) {
+    console.warn('AudioContext播放失败，降级到Audio元素:', e)
+    const url = URL.createObjectURL(blob)
+    if (currentAudio) { currentAudio.pause(); currentAudio = null }
+    currentAudio = new Audio(url)
+    try {
+      await currentAudio.play()
+      console.log('Audio元素播放成功')
+      startSpeaking()
+      currentAudio.onended = () => {
+        stopSpeaking()
+        URL.revokeObjectURL(url)
+      }
+    } catch (e2) {
+      console.error('音频播放完全失败:', e2)
+      stopSpeaking()
+      URL.revokeObjectURL(url)
+    }
   }
 }
 
@@ -266,10 +326,10 @@ onMounted(() => {
     }
   }, 30000)
 
-  // 注册音频上下文解锁（用户点击页面任意位置即生效）
-  document.addEventListener('click', unlockAudioContext)
-  document.addEventListener('touchstart', unlockAudioContext)
-  // 立即尝试初始化（如果用户之前已有交互）
+  // 注册音频上下文解锁（用户任意交互即生效）
+  document.addEventListener('click', unlockAudioContext, true)
+  document.addEventListener('touchstart', unlockAudioContext, true)
+  document.addEventListener('keydown', unlockAudioContext, true)
   ensureAudioContext()
 
   // 首次挂载时也触发当前页面的导览（延迟等待 WS 连接）
@@ -331,8 +391,9 @@ onUnmounted(() => {
   if (currentAudio) currentAudio.pause()
   if (currentSource) { try { currentSource.stop() } catch {} }
   if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null }
-  document.removeEventListener('click', unlockAudioContext)
-  document.removeEventListener('touchstart', unlockAudioContext)
+  document.removeEventListener('click', unlockAudioContext, true)
+  document.removeEventListener('touchstart', unlockAudioContext, true)
+  document.removeEventListener('keydown', unlockAudioContext, true)
   document.removeEventListener('mousemove', onDrag)
   document.removeEventListener('mouseup', stopDrag)
   document.removeEventListener('mousemove', onResize)
@@ -522,69 +583,24 @@ const sendAudio = (blob: Blob) => {
 const playAudioWithText = async (blob: Blob) => {
   console.log('收到音频，准备播放, size:', blob.size)
   
-  // 清除超时计时器
   if (audioTimeout) {
     clearTimeout(audioTimeout)
     audioTimeout = null
   }
   
-  // 先显示文字
   if (pendingText) {
     addMessage('assistant', pendingText)
     pendingText = null
   }
   isTyping.value = false
 
-  try {
-    // 优先使用 AudioContext 播放（不受浏览器自动播放限制）
-    const ctx = ensureAudioContext()
-    if (ctx.state === 'suspended') {
-      await ctx.resume().catch(() => {})
-    }
-
-    const arrayBuffer = await blob.arrayBuffer()
-    const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
-
-    // 停止上一个音频源
-    if (currentSource) {
-      try { currentSource.stop() } catch {}
-    }
-    if (currentAudio) {
-      currentAudio.pause()
-      currentAudio = null
-    }
-
-    currentSource = ctx.createBufferSource()
-    currentSource.buffer = audioBuffer
-    currentSource.connect(ctx.destination)
-    currentSource.start(0)
-    console.log('AudioContext 音频开始播放')
-    startSpeaking()
-
-    currentSource.onended = () => {
-      console.log('音频播放结束')
-      stopSpeaking()
-    }
-  } catch (e) {
-    console.warn('AudioContext播放失败，降级到Audio元素:', e)
-    // 降级：使用传统 Audio 元素
-    const url = URL.createObjectURL(blob)
-    if (currentAudio) { currentAudio.pause(); currentAudio = null }
-    currentAudio = new Audio(url)
-    try {
-      await currentAudio.play()
-      console.log('Audio元素播放成功')
-      startSpeaking()
-      currentAudio.onended = () => {
-        stopSpeaking()
-        URL.revokeObjectURL(url)
-      }
-    } catch (e2) {
-      console.error('音频播放完全失败:', e2)
-      stopSpeaking()
-      URL.revokeObjectURL(url)
-    }
+  if (!audioUnlocked) {
+    console.log('[Audio] 浏览器未交互，缓存音频等待点击后播放')
+    pendingAudioBlobs.push(blob)
+    return
   }
+
+  await actualPlayAudio(blob)
 }
 
 const startSpeaking = () => {

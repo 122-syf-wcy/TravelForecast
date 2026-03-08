@@ -104,7 +104,7 @@
     <view class="passport-sec" v-if="curTab === 2">
       <view class="pp-header">
         <view class="pp-avatar">
-          <text class="pp-av-t">游</text>
+          <text class="pp-av-emoji">📖</text>
         </view>
         <view class="pp-info">
           <text class="pp-name">我的研学护照</text>
@@ -321,8 +321,8 @@ onMounted(() => {
 /* 研学护照 */
 .passport-sec { padding: 16px; }
 .pp-header { display: flex; align-items: center; background: linear-gradient(135deg, #2A9D8F, #1A6B5A); padding: 20px; border-radius: 16px; margin-bottom: 16px; }
-.pp-avatar { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; margin-right: 14px; }
-.pp-av-t { font-size: 22px; font-weight: 800; color: #fff; }
+.pp-avatar { width: 50px; height: 50px; border-radius: 14px; background: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; margin-right: 14px; }
+.pp-av-emoji { font-size: 24px; }
 .pp-info { flex: 1; }
 .pp-name { display: block; font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
 .pp-points { font-size: 12px; color: rgba(255,255,255,0.8); }

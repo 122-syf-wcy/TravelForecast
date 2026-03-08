@@ -13,9 +13,9 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/travel_prediction?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: travel_user
-    password: Travel@2024  # ⚠️ 请修改为安全密码
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:travel_prediction}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:TravelDB2025!}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 10
@@ -67,8 +67,8 @@ oss:
   bucket: smarttourism717
   domain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
   publicDomain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
-  access-key-id: LTAI5tBCTtgd9vd8EZexBRb5
-  access-key-secret: UpjDrjgMfEpCIcRrykM76MyYp7Zt7b
+  access-key-id: ${OSS_ACCESS_KEY_ID:LTAI5t7AvM8aEFV9rxT7wVY6}
+  access-key-secret: ${OSS_ACCESS_KEY_SECRET:SCNTM1T0KYdcqaggeOW0g4uY396OJF}
 
 # Python预测服务配置
 prediction:
@@ -94,7 +94,7 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
   file:
-    name: C:/logs/travel-prediction.log
+    name: logs/travel-prediction.log
     max-size: 50MB
     max-history: 30
     total-size-cap: 1GB

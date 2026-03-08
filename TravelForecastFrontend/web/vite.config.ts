@@ -36,10 +36,18 @@ export default defineConfig({
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/mp-api/, '/api')
             },
+            // WebSocket代理 - 数字人直连
+            '/ws': {
+                target: 'ws://localhost:8083',
+                ws: true,
+                changeOrigin: true,
+                rewrite: (path) => path
+            },
             // AI智能服务代理 (必须在/api之前，否则会被/api捕获)
             '/ai-api': {
                 target: 'http://localhost:8081',
                 changeOrigin: true,
+                ws: true,
                 rewrite: (path) => path
             },
             // API接口代理

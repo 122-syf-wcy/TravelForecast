@@ -9,7 +9,7 @@ spring:
   # Redis配置（用于限流和缓存）
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:39.97.232.141}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
       database: 2  # 网关使用独立的Redis数据库

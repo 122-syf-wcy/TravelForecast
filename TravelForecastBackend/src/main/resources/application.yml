@@ -14,9 +14,9 @@ spring:
   # 数据源配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:travel_prediction}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST:39.97.232.141}:${DB_PORT:3306}/${DB_NAME:travel_prediction}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: ${DB_USER:root}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD:TravelDB2025!}
     # 连接池配置
     hikari:
       minimum-idle: 5
@@ -62,7 +62,7 @@ spring:
   # Redis配置（用于缓存AI响应，提升性能）
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:39.97.232.141}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
       database: 0
@@ -165,7 +165,7 @@ app:
 # DashScope（通义千问）配置
 dashscope:
   # 直接使用本地配置的 API Key（仅本地环境使用，勿提交到公共仓库）
-  api-key: ${DASHSCOPE_API_KEY:}
+  api-key: ${DASHSCOPE_API_KEY:sk-c444b733ee0c4e29a215b07cd875929f}
 
 # Python预测服务配置
 python:
@@ -176,7 +176,7 @@ python:
 # 高德地图配置
 amap:
   api:
-    key: ${AMAP_API_KEY:}
+    key: ${AMAP_API_KEY:339146bdb9038c3caf85a7aca9c9bb7f}
 
 # 阿里云OSS配置
 oss:
@@ -186,5 +186,5 @@ oss:
   domain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
   publicDomain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
   # 改为你新的有效 AccessKey（请从阿里云控制台获取）
-  access-key-id: ${OSS_ACCESS_KEY_ID:}
-  access-key-secret: ${OSS_ACCESS_KEY_SECRET:}
+  access-key-id: ${OSS_ACCESS_KEY_ID:LTAI5t7AvM8aEFV9rxT7wVY6}
+  access-key-secret: ${OSS_ACCESS_KEY_SECRET:SCNTM1T0KYdcqaggeOW0g4uY396OJF}
