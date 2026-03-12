@@ -418,7 +418,7 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   // 设置页面标题
   if (to.meta.title) {
-    document.title = `${to.meta.title} - 游韵华章`
+    document.title = `${to.meta.title} - 智教黔行`
   }
 
   // 初始化用户状态

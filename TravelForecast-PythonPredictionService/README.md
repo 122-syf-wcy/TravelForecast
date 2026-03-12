@@ -561,5 +561,5 @@ def _generate_historical_data(self, scenic_id: int):
 
 ---
 
-**游韵华章·时空旅测绘梦蓝图** - 智能预测，精准服务 🎯
+**智教黔行·时空旅测绘梦蓝图** - 智能预测，精准服务 🎯
 

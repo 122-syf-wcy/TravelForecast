@@ -33,7 +33,7 @@ import { sendChatMessage, getChatHistory } from '@/api/chat'
 
 interface Msg { role: 'user' | 'assistant'; content: string }
 
-const messages = ref<Msg[]>([{ role: 'assistant', content: '你好！我是游韵华章旅游助手。请问有什么可以帮助你的吗?' }])
+const messages = ref<Msg[]>([{ role: 'assistant', content: '你好！我是智教黔行旅游助手。请问有什么可以帮助你的吗?' }])
 const input = ref('')
 const loading = ref(false)
 const conversationId = ref<string>('')

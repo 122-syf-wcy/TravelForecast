@@ -16,7 +16,7 @@
     <artifactId>travel-gateway</artifactId>
     <version>1.0.0</version>
     <name>travel-gateway</name>
-    <description>游韵华章 - API网关服务 (统一入口/路由/限流/认证)</description>
+    <description>智教黔行 - API网关服务 (统一入口/路由/限流/认证)</description>
 
     <properties>
         <java.version>17</java.version>

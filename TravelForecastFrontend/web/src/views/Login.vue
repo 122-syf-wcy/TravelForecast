@@ -5,7 +5,7 @@
     
     <div class="login-panel z-10 w-full max-w-md px-8 py-10">
       <div class="text-center mb-10">
-        <h1 class="text-4xl mb-2 text-[#2A9D8F] font-bold">游韵华章</h1>
+        <h1 class="text-4xl mb-2 text-[#2A9D8F] font-bold">智教黔行</h1>
         <h2 class="text-xl text-[#2C3E50]">六盘水智慧旅游平台</h2>
       </div>
       
