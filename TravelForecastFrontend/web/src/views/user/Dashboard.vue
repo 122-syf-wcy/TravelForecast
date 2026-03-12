@@ -15,7 +15,7 @@
                   <span>智能预测</span>
                 </div>
               </div>
-              <h2 class="banner-title">欢迎来到游韵华章</h2>
+              <h2 class="banner-title">欢迎来到智教黔行</h2>
               <p class="banner-subtitle">基于多源数据的六盘水智慧旅游预测平台，为您提供科学的行程规划与实时服务。</p>
               <div class="banner-features">
                 <div class="feature-item" @click="router.push('/user/prediction')">

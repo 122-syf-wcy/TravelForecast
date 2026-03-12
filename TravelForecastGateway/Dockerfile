@@ -1,7 +1,7 @@
 FROM eclipse-temurin:17-jre
 
 LABEL maintainer="TravelForecast Gateway"
-LABEL description="游韵华章 - API网关服务"
+LABEL description="智教黔行 - API网关服务"
 
 WORKDIR /app
 

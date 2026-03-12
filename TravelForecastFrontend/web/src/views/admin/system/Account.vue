@@ -2,7 +2,7 @@
   <div class="account-settings">
     <div class="page-header">
       <h1 class="text-2xl text-gray-800 mb-4">系统设置</h1>
-      <p class="text-gray-500">游韵华章系统配置</p>
+      <p class="text-gray-500">智教黔行系统配置</p>
     </div>
     
     <el-tabs type="border-card" class="bg-white border border-gray-200 shadow-lg mb-6">
@@ -285,7 +285,7 @@ const passwordForm = reactive({
 
 // 系统设置表单
 const systemForm = reactive({
-  name: '游韵华章',
+  name: '智教黔行',
   description: '基于大数据的六盘水旅游景区客流量预测与智能管理平台',
   contactEmail: 'support@liupanshui.gov.cn',
   supportPhone: '0858-12345678',
@@ -469,7 +469,7 @@ const loadSystemConfig = async () => {
     const res: any = await systemConfigApi.getConfig()
     if (res.data) {
       Object.assign(systemForm, {
-        name: res.data.system_name || '游韵华章',
+        name: res.data.system_name || '智教黔行',
         description: res.data.system_description || '基于大数据的六盘水旅游景区客流量预测与智能管理平台',
         contactEmail: res.data.contact_email || 'support@liupanshui.gov.cn',
         supportPhone: res.data.support_phone || '0858-12345678',

@@ -1443,7 +1443,7 @@ const systemNotifications = ref<any[]>([])
 // 聊天相关
 const userMessage = ref('')
 const chatMessages = ref<ChatMessage[]>([
-  { type: 'ai', content: '你好！我是游韵华章旅游助手，专门为您提供六盘水景区的咨询服务。请问有什么可以帮助你的吗？' }
+  { type: 'ai', content: '你好！我是智教黔行旅游助手，专门为您提供六盘水景区的咨询服务。请问有什么可以帮助你的吗？' }
 ])
 
 // 常见问题建议（聚焦六盘水景区）
@@ -2046,7 +2046,7 @@ const getAIResponse = (query: string): string => {
   
   // 默认回复
   else {
-    return '感谢您的咨询。我是游韵华章旅游助手，可以为您提供景点推荐、美食指南、天气预报、交通路线等信息。如有其他问题，请随时向我咨询。'
+    return '感谢您的咨询。我是智教黔行旅游助手，可以为您提供景点推荐、美食指南、天气预报、交通路线等信息。如有其他问题，请随时向我咨询。'
   }
 }
 
@@ -3171,7 +3171,7 @@ watch(selectedScenic, (newVal, oldVal) => {
 
 // 清空对话
 const clearChat = () => {
-  chatMessages.value = [{ type: 'ai', content: '你好！我是游韵华章旅游助手。请问有什么可以帮助你的吗？' }]
+  chatMessages.value = [{ type: 'ai', content: '你好！我是智教黔行旅游助手。请问有什么可以帮助你的吗？' }]
   userMessage.value = ''
   scrollToBottom()
 }

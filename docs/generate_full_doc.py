@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-游韵华章 · 完整技术文档 Word生成
+智教黔行 · 完整技术文档 Word生成
 便于编写参赛文档、PPT和计划书的参考资料
 包含：系统概述、架构详解、功能清单、API接口、数据库设计、部署方案、三线表汇总等
 """
@@ -13,7 +13,7 @@ from docx.oxml.ns import qn, nsdecls
 from docx.oxml import parse_xml
 import os
 
-OUTPUT_PATH = os.path.join(os.path.dirname(__file__), '完整技术文档_游韵华章.docx')
+OUTPUT_PATH = os.path.join(os.path.dirname(__file__), '完整技术文档_智教黔行.docx')
 
 
 # ============================================================
@@ -151,7 +151,7 @@ def main():
 
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = p.add_run('游韵华章 · 智慧文旅一体化平台')
+    run = p.add_run('智教黔行 · 智慧文旅一体化平台')
     set_run_font(run, '黑体', 26, True)
 
     doc.add_paragraph()
@@ -232,7 +232,7 @@ def main():
     add_heading(doc, '第一章  项目概述', level=1)
 
     add_heading(doc, '1.1 项目简介', level=2)
-    add_para(doc, '"游韵华章·智游六盘水"是一个面向贵州六盘水市（中国凉都）打造的智慧文旅一体化平台，集"AI数字伴游+沉浸式导览+红色研学+客流预测+文创电商"于一体，覆盖景区管理方（管理员）、景区运营方（商户）、游客（用户）三大角色，贯穿"游前规划—游中体验—游后消费"全流程。')
+    add_para(doc, '"智教黔行·智游六盘水"是一个面向贵州六盘水市（中国凉都）打造的智慧文旅一体化平台，集"AI数字伴游+沉浸式导览+红色研学+客流预测+文创电商"于一体，覆盖景区管理方（管理员）、景区运营方（商户）、游客（用户）三大角色，贯穿"游前规划—游中体验—游后消费"全流程。')
     add_para(doc, '项目以梅花山风景区、玉舍国家森林公园、乌蒙大草原、水城古镇、明湖国家湿地公园五大景区为核心场景，构建了由8个独立微服务组成的完整系统，技术栈横跨Java、Python、JavaScript/TypeScript三大语言生态。')
 
     add_heading(doc, '1.2 项目定位与目标', level=2)
@@ -819,7 +819,7 @@ def main():
     add_para(doc, '以下内容可直接复制到PPT幻灯片中使用。', bold=True, indent=False)
 
     add_heading(doc, '10.1 一句话项目介绍', level=2)
-    add_para(doc, '"游韵华章"是面向六盘水"中国凉都"的智慧文旅一体化平台，融合AI大模型、深度学习预测、3D数字人导游、红色研学教育、文创电商五大核心能力，覆盖管理者-商户-游客全角色、游前-游中-游后全流程。', indent=False)
+    add_para(doc, '"智教黔行"是面向六盘水"中国凉都"的智慧文旅一体化平台，融合AI大模型、深度学习预测、3D数字人导游、红色研学教育、文创电商五大核心能力，覆盖管理者-商户-游客全角色、游前-游中-游后全流程。', indent=False)
 
     add_heading(doc, '10.2 核心数据（适合PPT数字页）', level=2)
     data_points = [
@@ -854,7 +854,7 @@ def main():
 
     add_heading(doc, '10.5 用户价值（适合PPT对比页）', level=2)
     make_three_line_table(doc,
-        headers=["维度", "传统景区", "游韵华章平台"],
+        headers=["维度", "传统景区", "智教黔行平台"],
         rows=[
             ["客流管理", "人工估算，被动应对", "AI预测(92%准确率)，主动调度"],
             ["游客导览", "纸质地图/人工导游", "3D数字导游+AI对话+TTS语音"],
@@ -864,7 +864,7 @@ def main():
             ["商品销售", "线下门店", "线上文创商城+积分兑换"],
             ["多端体验", "仅线下", "Web管理端+微信小程序全覆盖"],
         ],
-        caption="表23  传统景区 vs 游韵华章平台对比",
+        caption="表23  传统景区 vs 智教黔行平台对比",
         col_widths=[2, 4.5, 6],
     )
 
@@ -879,7 +879,7 @@ def main():
 
 if __name__ == '__main__':
     print("=" * 60)
-    print("  游韵华章 · 完整技术文档生成")
+    print("  智教黔行 · 完整技术文档生成")
     print("=" * 60)
     main()
     print("=" * 60)

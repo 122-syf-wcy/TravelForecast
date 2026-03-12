@@ -3,7 +3,7 @@
     <header class="tech-header">
       <div class="container mx-auto px-4 flex items-center justify-between h-16">
         <div class="logo flex items-center">
-          <h1 class="text-xl neon-text">游韵华章</h1>
+          <h1 class="text-xl neon-text">智教黔行</h1>
         </div>
         <nav class="main-nav">
           <ul class="flex space-x-6">

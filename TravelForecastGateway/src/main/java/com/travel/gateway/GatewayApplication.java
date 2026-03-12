@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * 游韵华章 - API网关服务
+ * 智教黔行 - API网关服务
  * 
  * 功能：
  * 1. 统一入口：所有微服务请求通过网关路由
@@ -24,7 +24,7 @@ public class GatewayApplication {
         System.out.println("""
             
             ╔══════════════════════════════════════════════════════════╗
-            ║     游韵华章 - API网关服务 启动成功                        ║
+            ║     智教黔行 - API网关服务 启动成功                        ║
             ║     Travel Forecast Gateway Service Started             ║
             ╚══════════════════════════════════════════════════════════╝
             

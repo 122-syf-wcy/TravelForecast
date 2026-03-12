@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ========================================
-echo   游韵华章 - API网关服务启动脚本
+echo   智教黔行 - API网关服务启动脚本
 echo   Travel Forecast Gateway
 echo ========================================
 echo.

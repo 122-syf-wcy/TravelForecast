@@ -6,7 +6,7 @@
         <div class="h-full flex flex-col">
           <!-- Logo -->
           <div class="h-16 flex items-center justify-center border-b border-gray-200">
-            <h1 class="text-xl font-medium text-[#2A9D8F]">游韵华章商户平台</h1>
+            <h1 class="text-xl font-medium text-[#2A9D8F]">智教黔行商户平台</h1>
           </div>
           
           <!-- 菜单 -->

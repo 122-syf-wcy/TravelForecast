@@ -2,7 +2,7 @@
   <div class="user-list text-gray-800">
     <div class="page-header mb-6">
       <h2 class="text-2xl font-bold text-gray-800">用户管理</h2>
-      <p class="text-gray-500 mt-1">游韵华章用户管理系统</p>
+      <p class="text-gray-500 mt-1">智教黔行用户管理系统</p>
     </div>
     
     <!-- 数据概览 -->

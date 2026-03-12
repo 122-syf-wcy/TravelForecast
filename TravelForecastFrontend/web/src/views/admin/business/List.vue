@@ -2,7 +2,7 @@
   <div class="business-list">
     <div class="page-header">
       <h1 class="text-2xl text-gray-800 mb-4">商户管理</h1>
-      <p class="text-gray-500">游韵华章商户管理系统</p>
+      <p class="text-gray-500">智教黔行商户管理系统</p>
     </div>
     
     <!-- 统计卡片 -->

@@ -505,7 +505,7 @@ const downloadReport = () => {
     '<div class="report-container">' +
     '<div class="report-header">' +
     '<h1 class="report-title">📊 客流预测分析报告</h1>' +
-    '<p class="report-subtitle">游韵华章 · ' + scenicName + ' · ' + new Date().toLocaleDateString('zh-CN') + '</p>' +
+    '<p class="report-subtitle">智教黔行 · ' + scenicName + ' · ' + new Date().toLocaleDateString('zh-CN') + '</p>' +
     '</div>' +
     '<div class="section">' +
     '<h2 class="section-title">基本信息</h2>' +
@@ -531,9 +531,9 @@ const downloadReport = () => {
     '</table></div>' +
     aiSection +
     '<div class="footer">' +
-    '<p>📊 本报告由游韵华章系统自动生成</p>' +
+    '<p>📊 本报告由智教黔行系统自动生成</p>' +
     '<p>生成时间：' + new Date().toLocaleString('zh-CN') + ' | 数据来源：' + modelName + '预测模型</p>' +
-    '<p>© 2024-2026 游韵华章 版权所有</p>' +
+    '<p>© 2024-2026 智教黔行 版权所有</p>' +
     '</div></div></body></html>'
 
   // 创建 Blob 并下载

@@ -5,7 +5,7 @@
       <el-header height="60px" class="bg-white border-b border-gray-200 flex items-center justify-between px-4 shadow-sm">
         <div class="flex items-center">
           <div class="logo mr-4">
-            <h1 class="text-xl font-medium text-[#2A9D8F]">游韵华章管理系统</h1>
+            <h1 class="text-xl font-medium text-[#2A9D8F]">智教黔行管理系统</h1>
           </div>
           
           <!-- 顶部导航菜单 -->

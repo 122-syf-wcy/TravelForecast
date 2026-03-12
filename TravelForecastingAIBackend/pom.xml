@@ -16,7 +16,7 @@
     <artifactId>travel-ai-service</artifactId>
     <version>1.0.0</version>
     <name>travel-ai-service</name>
-    <description>游韵华章 - AI智能服务 (智能聊天/行程规划/研学教育/知识库/语音服务)</description>
+    <description>智教黔行 - AI智能服务 (智能聊天/行程规划/研学教育/知识库/语音服务)</description>
 
     <properties>
         <java.version>17</java.version>

@@ -2,7 +2,7 @@
   <div class="landing-page">
     <nav class="nav-bar" :class="{ 'nav-scrolled': isScrolled }">
       <div class="nav-container">
-        <div class="nav-logo"><span class="logo-text">游韵华章</span></div>
+        <div class="nav-logo"><span class="logo-text">智教黔行</span></div>
         <div class="nav-menu">
           <a href="javascript:void(0)" @click="scrollToSection('hero')" class="nav-item">首页</a>
           <a href="javascript:void(0)" @click="scrollToSection('features')" class="nav-item">功能</a>
@@ -23,7 +23,7 @@
         <div class="hero-overlay"></div>
       </div>
       <div class="hero-content">
-        <h1 class="hero-title">游韵华章数据预测平台</h1>
+        <h1 class="hero-title">智教黔行数据预测平台</h1>
         <p class="hero-subtitle">基于AI大数据的六盘水旅游智能决策系统</p>
         <div class="hero-cta">
           <button class="cta-btn cta-btn-primary" @click="scrollToExperience"><span>立即体验</span></button>

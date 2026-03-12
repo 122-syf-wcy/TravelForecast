@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-游韵华章 · Word三线表文档生成脚本
+智教黔行 · Word三线表文档生成脚本
 所有数据均来自项目源码，数据来源在注释中标注
 生成用于挑战杯/计算机设计大赛的规范三线表文档
 """
@@ -160,7 +160,7 @@ def main():
     # ============================================================
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = p.add_run('游韵华章 · 智慧文旅一体化平台')
+    run = p.add_run('智教黔行 · 智慧文旅一体化平台')
     run.font.size = Pt(22)
     run.font.bold = True
     run.font.name = '黑体'
@@ -446,7 +446,7 @@ def main():
 
 if __name__ == '__main__':
     print("=" * 60)
-    print("  游韵华章 · Word三线表文档生成")
+    print("  智教黔行 · Word三线表文档生成")
     print("  所有数据来源于项目源码")
     print("=" * 60)
     main()

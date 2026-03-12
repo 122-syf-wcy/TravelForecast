@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-游韵华章 · 补充图表生成脚本 (基于真实系统数据)
+智教黔行 · 补充图表生成脚本 (基于真实系统数据)
 所有数据参数均来自项目源码，数据来源在注释中标注
 """
 
@@ -145,8 +145,8 @@ def save_fig(fig, name):
 # ========================================================
 def chart_08_prediction_curves():
     print("[8] 景区客流预测效果曲线...")
-    fig, axes = plt.subplots(2, 3, figsize=(16, 9))
-    fig.suptitle('五大景区客流预测效果对比', fontsize=14,
+    fig, axes = plt.subplots(2, 3, figsize=(22, 12))
+    fig.suptitle('五大景区客流预测效果对比', fontsize=28,
                  fontweight='bold', color=COLORS['dark'], y=1.01)
 
     np.random.seed(42)
@@ -185,18 +185,18 @@ def chart_08_prediction_curves():
 
         mae_ds = np.mean(np.abs(real_flows - ds_pred))
         mae_ar = np.mean(np.abs(real_flows - arima_pred))
-        ax.set_title(f'{name}\nMAE: Dual-Stream={mae_ds:.0f} | ARIMA={mae_ar:.0f}', fontsize=8, fontweight='bold')
-        ax.set_xlabel('天', fontsize=8)
-        ax.set_ylabel('客流量 (人)', fontsize=8)
-        ax.legend(fontsize=6, loc='upper left')
+        ax.set_title(f'{name}\nMAE: Dual-Stream={mae_ds:.0f} | ARIMA={mae_ar:.0f}', fontsize=16, fontweight='bold')
+        ax.set_xlabel('天', fontsize=14)
+        ax.set_ylabel('客流量 (人)', fontsize=14)
+        ax.legend(fontsize=12, loc='upper left')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
-        ax.tick_params(labelsize=7)
+        ax.tick_params(labelsize=13)
 
     axes[1][2].axis('off')
     axes[1][2].text(0.5, 0.5,
         f'双流融合模型\n在所有景区均表现\n优于单一ARIMA模型\n\nARIMA: {ARIMA_ACCURACY*100:.0f}%\nDual-Stream: {DUAL_STREAM_CONFIDENCE*100:.0f}%',
-        ha='center', va='center', fontsize=10, color=COLORS['dark'],
+        ha='center', va='center', fontsize=18, color=COLORS['dark'],
         transform=axes[1][2].transAxes,
         bbox=dict(boxstyle='round,pad=0.5', facecolor=COLORS['secondary'], edgecolor=COLORS['primary']))
 
@@ -210,8 +210,8 @@ def chart_08_prediction_curves():
 # ========================================================
 def chart_09_scenic_params():
     print("[9] 景区参数对比图...")
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16, 5.5))
-    fig.suptitle('五大景区核心参数对比', fontsize=14,
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(22, 8))
+    fig.suptitle('五大景区核心参数对比', fontsize=28,
                  fontweight='bold', color=COLORS['dark'], y=1.02)
 
     names = [cfg["name"][:4] for cfg in SCENIC_CONFIG.values()]  # 缩短名称
@@ -222,24 +222,24 @@ def chart_09_scenic_params():
 
     # 基础客流
     bars1 = ax1.bar(names, base_flows, color=cs, edgecolor='white', lw=1.5)
-    ax1.set_title('日均基础客流 (base_flow)', fontsize=11, fontweight='bold')
-    ax1.set_ylabel('人/天')
-    for b, v in zip(bars1, base_flows): ax1.text(b.get_x()+b.get_width()/2, v+50, str(v), ha='center', fontsize=9, fontweight='bold')
+    ax1.set_title('日均基础客流 (base_flow)', fontsize=20, fontweight='bold')
+    ax1.set_ylabel('人/天', fontsize=16)
+    for b, v in zip(bars1, base_flows): ax1.text(b.get_x()+b.get_width()/2, v+50, str(v), ha='center', fontsize=16, fontweight='bold')
     ax1.spines['top'].set_visible(False); ax1.spines['right'].set_visible(False)
 
     # 最大承载
     bars2 = ax2.bar(names, capacities, color=cs, edgecolor='white', lw=1.5)
-    ax2.set_title('最大承载量 (capacity)', fontsize=11, fontweight='bold')
-    ax2.set_ylabel('人/天')
-    for b, v in zip(bars2, capacities): ax2.text(b.get_x()+b.get_width()/2, v+100, str(v), ha='center', fontsize=9, fontweight='bold')
+    ax2.set_title('最大承载量 (capacity)', fontsize=20, fontweight='bold')
+    ax2.set_ylabel('人/天', fontsize=16)
+    for b, v in zip(bars2, capacities): ax2.text(b.get_x()+b.get_width()/2, v+100, str(v), ha='center', fontsize=16, fontweight='bold')
     ax2.spines['top'].set_visible(False); ax2.spines['right'].set_visible(False)
 
     # 海拔
     bars3 = ax3.bar(names, altitudes, color=cs, edgecolor='white', lw=1.5)
-    ax3.set_title('海拔高度 (altitude)', fontsize=11, fontweight='bold')
-    ax3.set_ylabel('米 (m)')
+    ax3.set_title('海拔高度 (altitude)', fontsize=20, fontweight='bold')
+    ax3.set_ylabel('米 (m)', fontsize=16)
     ax3.set_ylim(1500, 3200)
-    for b, v in zip(bars3, altitudes): ax3.text(b.get_x()+b.get_width()/2, v+30, f'{v}m', ha='center', fontsize=9, fontweight='bold')
+    for b, v in zip(bars3, altitudes): ax3.text(b.get_x()+b.get_width()/2, v+30, f'{v}m', ha='center', fontsize=16, fontweight='bold')
     ax3.spines['top'].set_visible(False); ax3.spines['right'].set_visible(False)
 
     plt.tight_layout()
@@ -252,7 +252,7 @@ def chart_09_scenic_params():
 # ========================================================
 def chart_10_hourly_heatmap():
     print("[10] 小时级客流分布热力图...")
-    fig, ax = plt.subplots(figsize=(14, 6))
+    fig, ax = plt.subplots(figsize=(20, 8))
 
     hours_labels = [f'{h}:00' for h in range(8, 20)]
     scenic_names = [cfg["name"] for cfg in SCENIC_CONFIG.values()]
@@ -267,22 +267,22 @@ def chart_10_hourly_heatmap():
 
     im = ax.imshow(data, cmap='YlOrRd', aspect='auto')
     ax.set_xticks(np.arange(12))
-    ax.set_xticklabels(hours_labels, fontsize=10)
+    ax.set_xticklabels(hours_labels, fontsize=16)
     ax.set_yticks(np.arange(5))
-    ax.set_yticklabels(scenic_names, fontsize=10, fontweight='bold')
+    ax.set_yticklabels(scenic_names, fontsize=16, fontweight='bold')
 
     for i in range(5):
         for j in range(12):
             val = int(data[i][j])
             text_color = 'white' if data[i][j] > data.max() * 0.6 else 'black'
-            ax.text(j, i, f'{val}', ha='center', va='center', fontsize=8, color=text_color, fontweight='bold')
+            ax.text(j, i, f'{val}', ha='center', va='center', fontsize=14, color=text_color, fontweight='bold')
 
     cbar = plt.colorbar(im, ax=ax, shrink=0.8)
-    cbar.set_label('客流量 (人/小时段)', fontsize=10)
+    cbar.set_label('客流量 (人/小时段)', fontsize=16)
 
     ax.set_title('五大景区小时级客流分布热力图',
-                 fontsize=13, fontweight='bold', color=COLORS['dark'], pad=15)
-    ax.set_xlabel('时段', fontsize=11)
+                 fontsize=26, fontweight='bold', color=COLORS['dark'], pad=15)
+    ax.set_xlabel('时段', fontsize=18)
 
 
     save_fig(fig, '10_小时级客流热力图.png')
@@ -294,8 +294,8 @@ def chart_10_hourly_heatmap():
 # ========================================================
 def chart_11_impact_factors():
     print("[11] 影响因子分析图...")
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16, 5.5))
-    fig.suptitle('客流预测影响因子分析', fontsize=14,
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(22, 8))
+    fig.suptitle('客流预测影响因子分析', fontsize=28,
                  fontweight='bold', color=COLORS['dark'], y=1.02)
 
     # 天气影响
@@ -308,37 +308,37 @@ def chart_11_impact_factors():
     bars_f = ax1.bar(x - 0.2, w_factors, 0.35, label='客流系数', color=w_colors, edgecolor='white')
     bars_p = ax1.bar(x + 0.2, w_probs, 0.35, label='出现概率', color=w_colors, alpha=0.4, edgecolor='white')
     ax1.set_xticks(x)
-    ax1.set_xticklabels(w_names, fontsize=11, fontweight='bold')
-    ax1.set_title('天气类型对客流的影响', fontsize=11, fontweight='bold')
-    ax1.set_ylabel('系数/概率')
-    ax1.legend(fontsize=9)
+    ax1.set_xticklabels(w_names, fontsize=18, fontweight='bold')
+    ax1.set_title('天气类型对客流的影响', fontsize=20, fontweight='bold')
+    ax1.set_ylabel('系数/概率', fontsize=16)
+    ax1.legend(fontsize=14)
     ax1.spines['top'].set_visible(False); ax1.spines['right'].set_visible(False)
     for b, v in zip(bars_f, w_factors):
-        ax1.text(b.get_x()+b.get_width()/2, v+0.02, f'{v}', ha='center', fontsize=9, fontweight='bold')
+        ax1.text(b.get_x()+b.get_width()/2, v+0.02, f'{v}', ha='center', fontsize=16, fontweight='bold')
     for b, v in zip(bars_p, w_probs):
-        ax1.text(b.get_x()+b.get_width()/2, v+0.02, f'{v}', ha='center', fontsize=8)
+        ax1.text(b.get_x()+b.get_width()/2, v+0.02, f'{v}', ha='center', fontsize=14)
 
     # 季节影响
     s_names = list(SEASON_FACTORS.keys())
     s_values = list(SEASON_FACTORS.values())
     bars2 = ax2.bar(s_names, s_values, color=[COLORS['red'], COLORS['green'], COLORS['blue']], edgecolor='white', width=0.5)
-    ax2.set_title('季节因子 (seasonal_factor)', fontsize=11, fontweight='bold')
-    ax2.set_ylabel('乘法系数')
+    ax2.set_title('季节因子 (seasonal_factor)', fontsize=20, fontweight='bold')
+    ax2.set_ylabel('乘法系数', fontsize=16)
     ax2.set_ylim(0.5, 1.5)
     ax2.axhline(y=1.0, color='gray', ls='--', alpha=0.5)
     for b, v in zip(bars2, s_values):
-        ax2.text(b.get_x()+b.get_width()/2, v+0.02, f'x{v}', ha='center', fontsize=11, fontweight='bold')
+        ax2.text(b.get_x()+b.get_width()/2, v+0.02, f'x{v}', ha='center', fontsize=18, fontweight='bold')
     ax2.spines['top'].set_visible(False); ax2.spines['right'].set_visible(False)
 
     # 周末/节假日
     labels = ['工作日', '周末', '节假日']
     values = [1.0, WEEKEND_FACTOR, HOLIDAY_FACTOR]
     bars3 = ax3.bar(labels, values, color=[COLORS['gray'], COLORS['accent'], COLORS['red']], edgecolor='white', width=0.5)
-    ax3.set_title('周末/节假日因子', fontsize=11, fontweight='bold')
-    ax3.set_ylabel('乘法系数')
+    ax3.set_title('周末/节假日因子', fontsize=20, fontweight='bold')
+    ax3.set_ylabel('乘法系数', fontsize=16)
     ax3.axhline(y=1.0, color='gray', ls='--', alpha=0.5)
     for b, v in zip(bars3, values):
-        ax3.text(b.get_x()+b.get_width()/2, v+0.03, f'x{v}', ha='center', fontsize=12, fontweight='bold')
+        ax3.text(b.get_x()+b.get_width()/2, v+0.03, f'x{v}', ha='center', fontsize=18, fontweight='bold')
     ax3.spines['top'].set_visible(False); ax3.spines['right'].set_visible(False)
 
     plt.tight_layout()
@@ -352,9 +352,9 @@ def chart_11_impact_factors():
 # ========================================================
 def chart_12_weight_search():
     print("[12] 动态权重搜索过程图...")
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5.5))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
     fig.suptitle('双流融合模型 —— 动态权重搜索过程',
-                 fontsize=13, fontweight='bold', color=COLORS['dark'], y=1.02)
+                 fontsize=26, fontweight='bold', color=COLORS['dark'], y=1.02)
 
     # 来源: dual_stream_model.py line 105
     alphas = np.arange(0, 1.05, GRID_SEARCH_STEP)
@@ -387,10 +387,10 @@ def chart_12_weight_search():
         ax1.plot(alphas, mses, 'o-', color=color, lw=1.5, ms=3, label=f'{name} (best={best_alpha:.2f})')
         ax1.plot(best_alpha, mses[best_idx], '*', color=color, ms=15, zorder=5)
 
-    ax1.set_xlabel(f'alpha (ARIMA权重), 步长={GRID_SEARCH_STEP}', fontsize=11)
-    ax1.set_ylabel('验证集 MSE', fontsize=11)
-    ax1.set_title('各景区最优alpha搜索', fontsize=10, fontweight='bold')
-    ax1.legend(fontsize=8, loc='upper right')
+    ax1.set_xlabel(f'alpha (ARIMA权重), 步长={GRID_SEARCH_STEP}', fontsize=18)
+    ax1.set_ylabel('验证集 MSE', fontsize=18)
+    ax1.set_title('各景区最优alpha搜索', fontsize=20, fontweight='bold')
+    ax1.legend(fontsize=14, loc='upper right')
     ax1.spines['top'].set_visible(False); ax1.spines['right'].set_visible(False)
 
     # 右图: 各景区最优权重
@@ -402,17 +402,17 @@ def chart_12_weight_search():
     bars1 = ax2.bar(x - width/2, arima_w, width, label='ARIMA权重 (alpha)', color=COLORS['primary'], edgecolor='white')
     bars2 = ax2.bar(x + width/2, lstm_w, width, label='LSTM权重 (1-alpha)', color=COLORS['blue'], edgecolor='white')
     ax2.set_xticks(x)
-    ax2.set_xticklabels(scenic_short, fontsize=10, fontweight='bold')
-    ax2.set_ylabel('权重值')
-    ax2.set_title('各景区自适应最优权重分配', fontsize=10, fontweight='bold')
+    ax2.set_xticklabels(scenic_short, fontsize=16, fontweight='bold')
+    ax2.set_ylabel('权重值', fontsize=16)
+    ax2.set_title('各景区自适应最优权重分配', fontsize=20, fontweight='bold')
     ax2.set_ylim(0, 1.0)
-    ax2.legend(fontsize=9)
+    ax2.legend(fontsize=14)
     ax2.spines['top'].set_visible(False); ax2.spines['right'].set_visible(False)
 
     for b, v in zip(bars1, arima_w):
-        ax2.text(b.get_x()+b.get_width()/2, v+0.01, f'{v:.2f}', ha='center', fontsize=9, fontweight='bold', color=COLORS['primary'])
+        ax2.text(b.get_x()+b.get_width()/2, v+0.01, f'{v:.2f}', ha='center', fontsize=15, fontweight='bold', color=COLORS['primary'])
     for b, v in zip(bars2, lstm_w):
-        ax2.text(b.get_x()+b.get_width()/2, v+0.01, f'{v:.2f}', ha='center', fontsize=9, fontweight='bold', color=COLORS['blue'])
+        ax2.text(b.get_x()+b.get_width()/2, v+0.01, f'{v:.2f}', ha='center', fontsize=15, fontweight='bold', color=COLORS['blue'])
 
     plt.tight_layout()
     save_fig(fig, '12_动态权重搜索过程图.png')
@@ -433,9 +433,9 @@ def chart_13_wavelet_denoising():
     except ImportError:
         HAS_PYWT = False
 
-    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+    fig, axes = plt.subplots(1, 3, figsize=(22, 7))
     fig.suptitle(f'小波去噪效果对比 (wavelet={WAVELET_BASE}, level={WAVELET_LEVEL})',
-                 fontsize=14, fontweight='bold', color=COLORS['dark'], y=1.02)
+                 fontsize=26, fontweight='bold', color=COLORS['dark'], y=1.02)
 
     np.random.seed(88)
     # 使用真实景区参数生成数据 (乌蒙大草原 base_flow=3500)
@@ -470,24 +470,24 @@ def chart_13_wavelet_denoising():
         method_label = '(pywt未安装, 使用移动平均近似)'
 
     axes[0].plot(t, noisy_signal, color=COLORS['gray'], lw=0.8, alpha=0.8)
-    axes[0].set_title(f'原始数据 (base={base} + noise~N(0,300))', fontsize=10, fontweight='bold')
-    axes[0].set_xlabel('天'); axes[0].set_ylabel('客流量 (人)')
+    axes[0].set_title(f'原始数据 (base={base} + noise~N(0,300))', fontsize=18, fontweight='bold')
+    axes[0].set_xlabel('天', fontsize=16); axes[0].set_ylabel('客流量 (人)', fontsize=16)
     axes[0].spines['top'].set_visible(False); axes[0].spines['right'].set_visible(False)
 
     axes[1].plot(t, noisy_signal, color=COLORS['gray'], lw=0.5, alpha=0.3, label='原始')
     axes[1].plot(t, denoised, color=COLORS['primary'], lw=2, label=f'去噪后')
-    axes[1].set_title(f'去噪后 ({method_label})', fontsize=10, fontweight='bold')
-    axes[1].set_xlabel('天'); axes[1].legend(fontsize=9)
+    axes[1].set_title(f'去噪后 ({method_label})', fontsize=18, fontweight='bold')
+    axes[1].set_xlabel('天', fontsize=16); axes[1].legend(fontsize=14)
     axes[1].spines['top'].set_visible(False); axes[1].spines['right'].set_visible(False)
 
     axes[2].plot(t, trend, color=COLORS['red'], lw=2, label='真实趋势', alpha=0.8)
     axes[2].plot(t, denoised, color=COLORS['primary'], lw=2, label='去噪恢复', ls='--')
-    axes[2].set_title('去噪信号 vs 真实趋势', fontsize=10, fontweight='bold')
-    axes[2].set_xlabel('天'); axes[2].legend(fontsize=9)
+    axes[2].set_title('去噪信号 vs 真实趋势', fontsize=18, fontweight='bold')
+    axes[2].set_xlabel('天', fontsize=16); axes[2].legend(fontsize=14)
     axes[2].spines['top'].set_visible(False); axes[2].spines['right'].set_visible(False)
     corr = np.corrcoef(trend, denoised)[0, 1]
     axes[2].text(0.95, 0.05, f'相关系数 r = {corr:.4f}', transform=axes[2].transAxes,
-                ha='right', fontsize=10, fontweight='bold', color=COLORS['primary'],
+                ha='right', fontsize=16, fontweight='bold', color=COLORS['primary'],
                 bbox=dict(boxstyle='round', facecolor=COLORS['secondary']))
 
     plt.tight_layout()
@@ -500,8 +500,8 @@ def chart_13_wavelet_denoising():
 # ========================================================
 def chart_14_lstm_comparison():
     print("[14] LSTM结构对比图...")
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
-    fig.suptitle('LSTM网络结构对比', fontsize=14,
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
+    fig.suptitle('LSTM网络结构对比', fontsize=26,
                  fontweight='bold', color=COLORS['dark'], y=1.02)
 
     # 左图: 旧版LSTM vs 新版LSTM 参数对比
@@ -515,16 +515,16 @@ def chart_14_lstm_comparison():
     bars1 = ax1.barh(x - width/2, old_vals, width, label='旧版LSTM (lstm_model.py)', color=COLORS['gray'])
     bars2 = ax1.barh(x + width/2, new_vals, width, label='新版多变量LSTM (lstm_new.py)', color=COLORS['primary'])
     ax1.set_yticks(x)
-    ax1.set_yticklabels(params, fontsize=9)
-    ax1.set_title('网络层参数对比', fontsize=11, fontweight='bold')
-    ax1.legend(fontsize=9)
+    ax1.set_yticklabels(params, fontsize=15)
+    ax1.set_title('网络层参数对比', fontsize=20, fontweight='bold')
+    ax1.legend(fontsize=14)
     ax1.invert_yaxis()
     ax1.spines['top'].set_visible(False); ax1.spines['right'].set_visible(False)
 
     for b, v in zip(bars1, old_vals):
-        if v > 0: ax1.text(b.get_width()+0.3, b.get_y()+b.get_height()/2, str(v), va='center', fontsize=8)
+        if v > 0: ax1.text(b.get_width()+0.3, b.get_y()+b.get_height()/2, str(v), va='center', fontsize=14)
     for b, v in zip(bars2, new_vals):
-        if v > 0: ax1.text(b.get_width()+0.3, b.get_y()+b.get_height()/2, str(v), va='center', fontsize=8, color=COLORS['primary'])
+        if v > 0: ax1.text(b.get_width()+0.3, b.get_y()+b.get_height()/2, str(v), va='center', fontsize=14, color=COLORS['primary'])
 
     # 右图: 6维特征向量说明
     features_6d = ['历史客流', '节庆标记\n(is_holiday)', '周末标记\n(is_weekend)',
@@ -536,17 +536,17 @@ def chart_14_lstm_comparison():
     y = np.arange(len(features_6d))
     bars = ax2.barh(y, [1]*6, color=colors_f, height=0.6, edgecolor='white', lw=1.5)
     ax2.set_yticks(y)
-    ax2.set_yticklabels(features_6d, fontsize=9, fontweight='bold')
+    ax2.set_yticklabels(features_6d, fontsize=15, fontweight='bold')
     ax2.set_xticks([])
     ax2.set_title(f'6维特征向量 (feature_dim={LSTM_NEW_FEATURE_DIM})',
-                  fontsize=10, fontweight='bold')
+                  fontsize=20, fontweight='bold')
     ax2.invert_yaxis()
     ax2.spines['top'].set_visible(False); ax2.spines['right'].set_visible(False)
     ax2.spines['bottom'].set_visible(False)
 
     for b, method in zip(bars, norm_methods):
         ax2.text(0.5, b.get_y()+b.get_height()/2, method, ha='center', va='center',
-                fontsize=9, color='white', fontweight='bold')
+                fontsize=15, color='white', fontweight='bold')
 
     plt.tight_layout()
     save_fig(fig, '14_LSTM结构对比图.png')
@@ -558,8 +558,8 @@ def chart_14_lstm_comparison():
 # ========================================================
 def chart_15_gateway_and_stats():
     print("[15] 网关配置与代码统计图...")
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
-    fig.suptitle('系统治理配置与代码规模', fontsize=14,
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(22, 8))
+    fig.suptitle('系统治理配置与代码规模', fontsize=26,
                  fontweight='bold', color=COLORS['dark'], y=1.02)
 
     # 左图: 网关限流配置 (来源 application.yml)
@@ -573,15 +573,15 @@ def chart_15_gateway_and_stats():
     bars1 = ax1.bar(x - width/2, rates, width, label='replenishRate (req/s)', color=cs, edgecolor='white')
     bars2 = ax1.bar(x + width/2, bursts, width, label='burstCapacity', color=cs, alpha=0.5, edgecolor='white')
     ax1.set_xticks(x)
-    ax1.set_xticklabels(services, fontsize=8, fontweight='bold', rotation=15)
-    ax1.set_ylabel('请求数')
-    ax1.set_title('API网关限流配置 (Redis令牌桶)', fontsize=10, fontweight='bold')
-    ax1.legend(fontsize=9)
+    ax1.set_xticklabels(services, fontsize=14, fontweight='bold', rotation=15)
+    ax1.set_ylabel('请求数', fontsize=16)
+    ax1.set_title('API网关限流配置 (Redis令牌桶)', fontsize=20, fontweight='bold')
+    ax1.legend(fontsize=14)
     ax1.spines['top'].set_visible(False); ax1.spines['right'].set_visible(False)
     for b, v in zip(bars1, rates):
-        ax1.text(b.get_x()+b.get_width()/2, v+2, str(v), ha='center', fontsize=9, fontweight='bold')
+        ax1.text(b.get_x()+b.get_width()/2, v+2, str(v), ha='center', fontsize=15, fontweight='bold')
     for b, v in zip(bars2, bursts):
-        ax1.text(b.get_x()+b.get_width()/2, v+2, str(v), ha='center', fontsize=8)
+        ax1.text(b.get_x()+b.get_width()/2, v+2, str(v), ha='center', fontsize=14)
 
     # 右图: 后端控制器分布 (来源: find_by_name统计)
     ctrl_data = BACKEND_STATS["controllers"]
@@ -591,13 +591,13 @@ def chart_15_gateway_and_stats():
 
     wedges, texts, autotexts = ax2.pie(ctrl_counts, labels=ctrl_names, colors=ctrl_colors,
                                         autopct='%1.0f%%', startangle=90, pctdistance=0.8,
-                                        textprops={'fontsize': 8})
-    for at in autotexts: at.set_fontsize(7)
+                                        textprops={'fontsize': 14})
+    for at in autotexts: at.set_fontsize(13)
 
     ax2.set_title(f'后端控制器分布 (共{BACKEND_STATS["total_controllers"]}个)\n'
                   f'services={BACKEND_STATS["services"]} | mappers={BACKEND_STATS["mappers"]} | '
                   f'entities={BACKEND_STATS["entities"]} | total_java={BACKEND_STATS["total_java_files"]}',
-                  fontsize=10, fontweight='bold')
+                  fontsize=14, fontweight='bold')
 
     plt.tight_layout()
     save_fig(fig, '15_网关配置与代码统计图.png')
@@ -608,7 +608,7 @@ def chart_15_gateway_and_stats():
 # ========================================================
 if __name__ == '__main__':
     print("=" * 60)
-    print("  游韵华章 · 补充图表生成 (基于真实系统数据)")
+    print("  智教黔行 · 补充图表生成 (基于真实系统数据)")
     print("  所有数据来源标注在图表标题和代码注释中")
     print("=" * 60)
 

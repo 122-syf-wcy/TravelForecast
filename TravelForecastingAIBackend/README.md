@@ -1,4 +1,4 @@
-# 游韵华章 · AI智能服务 (TravelForecastingAIBackend)
+# 智教黔行 · AI智能服务 (TravelForecastingAIBackend)
 
 Java Spring Boot 微服务，提供AI智能聊天、行程规划、研学教育、知识库检索、语音服务代理等功能。
 

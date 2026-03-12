@@ -48,7 +48,7 @@
       <view class="pay-confirm-btn" @tap="onConfirm">
         <text class="pay-confirm-t">确认支付</text>
       </view>
-      <text class="pay-safe-tip">安全支付由游韵华章提供保障</text>
+      <text class="pay-safe-tip">安全支付由智教黔行提供保障</text>
     </view>
 
     <!-- 阶段2：密码输入 -->
@@ -130,7 +130,7 @@ const props = defineProps({
   orderId: { type: [Number, String], default: '' },
   orderNo: { type: String, default: '' },
   amount: { type: [Number, String], default: 0 },
-  merchantName: { type: String, default: '游韵华章·文创商城' },
+  merchantName: { type: String, default: '智教黔行·文创商城' },
   showPointsPay: { type: Boolean, default: true },
   pointsBalance: { type: Number, default: 0 }
 })
