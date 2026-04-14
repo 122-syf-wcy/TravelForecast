@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="data-statistics">
     <div class="page-header">
       <h1 class="text-2xl text-gray-800 mb-4">统计报表</h1>
@@ -112,6 +112,16 @@ import { getTourismIncome, getVisitorSource, getScenicComparison, getDetailedDat
 const incomeChartRef = ref<HTMLElement | null>(null)
 const sourceChartRef = ref<HTMLElement | null>(null)
 const comparisonChartRef = ref<HTMLElement | null>(null)
+
+const onChartsResize = () => {
+  const i = incomeChartRef.value
+  const s = sourceChartRef.value
+  const c = comparisonChartRef.value
+  if (i) echarts.getInstanceByDom(i)?.resize()
+  if (s) echarts.getInstanceByDom(s)?.resize()
+  if (c) echarts.getInstanceByDom(c)?.resize()
+}
+
 const selectedYear = ref('2025')
 const searchQuery = ref('')
 const years = ['2022', '2023', '2024', '2025']
@@ -146,9 +156,11 @@ onMounted(() => {
   initIncomeChart()
   initSourceChart()
   initComparisonChart()
+  window.addEventListener('resize', onChartsResize)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', onChartsResize)
   [incomeChartRef, sourceChartRef, comparisonChartRef].forEach(r => {
     if (r.value) {
       const inst = echarts.getInstanceByDom(r.value)
@@ -251,7 +263,6 @@ const initIncomeChart = async () => {
     ElMessage.error('加载收入统计数据失败')
   }
   
-  window.addEventListener('resize', () => myChart.resize())
   ;(window as any).__incomeChart = myChart
 }
 
@@ -324,7 +335,6 @@ const initSourceChart = async () => {
     ElMessage.error('加载游客来源数据失败')
   }
   
-  window.addEventListener('resize', () => myChart.resize())
   ;(window as any).__sourceChart = myChart
 }
 
@@ -447,7 +457,6 @@ const initComparisonChart = async () => {
     ElMessage.error('加载景区对比数据失败')
   }
   
-  window.addEventListener('resize', () => myChart.resize())
   ;(window as any).__comparisonChart = myChart
 }
 

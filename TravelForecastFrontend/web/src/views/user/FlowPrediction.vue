@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="flow-prediction-container p-6">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- 预测控制面板 -->
@@ -262,6 +262,12 @@ const hourlyChartRef = ref<HTMLElement | null>(null)
 let predictionChart: any = null
 let factorsChart: any = null
 let hourlyChart: any = null
+
+const onChartsResize = () => {
+  predictionChart?.resize()
+  factorsChart?.resize()
+  hourlyChart?.resize()
+}
 
 // 景区选项（从后端动态加载）
 const scenicOptions = ref<Array<{ value: number; label: string }>>([])
@@ -716,10 +722,6 @@ const initPredictionChart = () => {
     }
     
     predictionChart.setOption(option)
-    
-    window.addEventListener('resize', () => {
-      predictionChart?.resize()
-    })
   }
 }
 
@@ -886,10 +888,6 @@ const initFactorsChart = () => {
     setTimeout(() => {
       factorsChart?.resize()
     }, 50)
-    
-    window.addEventListener('resize', () => {
-      factorsChart?.resize()
-    })
   }
 }
 
@@ -1050,10 +1048,6 @@ const initHourlyChart = () => {
     setTimeout(() => {
       hourlyChart?.resize()
     }, 50)
-    
-    window.addEventListener('resize', () => {
-      hourlyChart?.resize()
-    })
   }
 }
 
@@ -1614,9 +1608,11 @@ const updatePredictionChart = (type: string) => {
 // 组件挂载时加载景区列表
 onMounted(() => {
   loadScenicOptions()
+  window.addEventListener('resize', onChartsResize)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', onChartsResize)
   if (predictionChart) { predictionChart.dispose(); predictionChart = null }
   if (factorsChart) { factorsChart.dispose(); factorsChart = null }
   if (hourlyChart) { hourlyChart.dispose(); hourlyChart = null }

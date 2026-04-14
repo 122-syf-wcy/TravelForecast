@@ -8,6 +8,7 @@ from typing import Optional, AsyncGenerator
 import tempfile
 import os
 import io
+import httpx
 from openai import AsyncOpenAI
 
 from app.core.config import get_settings
@@ -92,11 +93,13 @@ class SpeechService:
                 if chunk["type"] == "audio":
                     audio_data += chunk["data"]
             
-            return audio_data
+            if audio_data:
+                return audio_data
+            raise Exception("Edge TTS 返回空音频")
             
         except Exception as e:
-            print(f"TTS Error: {e}")
-            return b''
+            print(f"[TTS] Edge TTS 失败: {e}, 尝试 DashScope 降级...")
+            return await self._dashscope_tts(text)
     
     def _strip_markdown(self, text: str) -> str:
         """清除Markdown格式符号，保留纯文本用于语音合成"""
@@ -431,6 +434,42 @@ class SpeechService:
     def list_voices(cls) -> dict:
         """列出可用语音"""
         return cls.VOICES
+
+
+    async def _dashscope_tts(self, text: str) -> bytes:
+        """
+        DashScope CosyVoice TTS 备选方案
+        使用阿里通义 CosyVoice 语音合成 API
+        """
+        api_key = os.environ.get("DASHSCOPE_API_KEY", "")
+        if not api_key:
+            print("[TTS] DashScope API Key 未配置，无法降级")
+            return b''
+        
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                resp = await client.post(
+                    "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2audio/synthesis",
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                        "X-DashScope-Async": "disable",
+                    },
+                    json={
+                        "model": "cosyvoice-v1",
+                        "input": {"text": text},
+                        "parameters": {"voice": "longxiaochun"},
+                    },
+                )
+                if resp.status_code == 200 and resp.headers.get("content-type", "").startswith("audio"):
+                    print(f"[TTS] DashScope 合成成功: {len(resp.content)} bytes")
+                    return resp.content
+                else:
+                    print(f"[TTS] DashScope 失败: {resp.status_code} {resp.text[:200]}")
+                    return b''
+        except Exception as e:
+            print(f"[TTS] DashScope 异常: {e}")
+            return b''
 
 
 # 单例

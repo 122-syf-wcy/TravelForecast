@@ -76,6 +76,8 @@ public class BannerController {
      */
     private String signIfNeeded(String image) {
         if (image == null || image.isEmpty()) return image;
+        // 已是代理相对路径（/api/oss/proxy?key=...），直接返回，无需签名
+        if (!image.startsWith("http")) return image;
         try {
             String key = extractObjectKey(image);
             if (key == null) return image;

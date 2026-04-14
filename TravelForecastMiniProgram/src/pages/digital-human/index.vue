@@ -18,8 +18,8 @@
           <video
             id="avatarVideo"
             class="dh-video"
-            src="https://smarttourism717.oss-cn-beijing.aliyuncs.com/digital-human/avatar.mp4"
-            poster="https://smarttourism717.oss-cn-beijing.aliyuncs.com/digital-human/dh-avatar.png"
+            src="http://39.97.232.141/videos/avatar.mp4"
+            poster="/static/dh-avatar.png"
             :loop="true"
             :muted="true"
             :controls="false"
@@ -201,9 +201,7 @@ const sendMsg = async () => {
   statusText.value = '正在思考...'
 
   try {
-    console.log('[DH] 发送消息:', { message: text, conversationId: sessionId.value })
     const res = await chatWithAI(text, sessionId.value)
-    console.log('[DH] AI响应:', JSON.stringify(res))
 
     const replyText = res.reply
     let audioData = null
@@ -242,24 +240,6 @@ const sendMsg = async () => {
 const onQuick = (q) => {
   inputVal.value = q
   sendMsg()
-}
-
-const autoPlayVoice = async (text) => {
-  if (!text || text.length > 500) return
-  try {
-    statusText.value = '正在合成语音...'
-    const res = await textToSpeech(text)
-    if (res.audio) {
-      startVideoPlay()
-      playBase64Audio(res.audio)
-      const lastAiMsg = [...msgs.value].reverse().find(m => !m.isMe && !m.loading)
-      if (lastAiMsg) lastAiMsg.playing = true
-    }
-  } catch (e) {
-    // 语音合成失败不影响文字显示
-  } finally {
-    statusText.value = '黔小游在线中'
-  }
 }
 
 const playVoice = async (msg) => {

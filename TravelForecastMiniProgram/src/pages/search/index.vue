@@ -92,7 +92,7 @@ const doSearch = async () => {
         desc: s.description || s.address || '',
         category: s.category || '景区',
         loc: s.city || s.address || '',
-        img: resolveAssetUrl(s.imageUrl) || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&q=80'
+        img: resolveAssetUrl(s.imageUrl) || '/static/default-spot.svg'
       }))
     } else {
       results.value = []

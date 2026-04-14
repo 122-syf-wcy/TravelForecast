@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="data-statistics">
     <div class="page-header mb-6">
       <h1 class="text-2xl text-[#2C3E50] mb-2">景区统计报表</h1>
@@ -118,6 +118,15 @@ const incomeChartRef = ref<HTMLElement | null>(null)
 const sourceChartRef = ref<HTMLElement | null>(null)
 const trendChartRef = ref<HTMLElement | null>(null)
 
+const onChartsResize = () => {
+  const i = incomeChartRef.value
+  const s = sourceChartRef.value
+  const t = trendChartRef.value
+  if (i) echarts.getInstanceByDom(i)?.resize()
+  if (s) echarts.getInstanceByDom(s)?.resize()
+  if (t) echarts.getInstanceByDom(t)?.resize()
+}
+
 // 商家景区ID（从API获取）
 const merchantScenicId = ref<number>(0)
 
@@ -197,9 +206,11 @@ onMounted(() => {
   loadMerchantScenic()
   initAllCharts()
   loadTableData()
+  window.addEventListener('resize', onChartsResize)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', onChartsResize)
   [incomeChartRef, sourceChartRef, trendChartRef].forEach(r => {
     if (r.value) {
       const inst = echarts.getInstanceByDom(r.value)
@@ -263,7 +274,6 @@ const initIncomeChart = () => {
   }
   
   myChart.setOption(option)
-  window.addEventListener('resize', () => myChart.resize())
   ;(window as any).__incomeChart = myChart
 }
 
@@ -309,7 +319,6 @@ const initSourceChart = () => {
   }
   
   myChart.setOption(option)
-  window.addEventListener('resize', () => myChart.resize())
   ;(window as any).__sourceChart = myChart
 }
 
@@ -375,7 +384,6 @@ const initTrendChart = () => {
   }
   
   myChart.setOption(option)
-  window.addEventListener('resize', () => myChart.resize())
   ;(window as any).__trendChart = myChart
 }
 

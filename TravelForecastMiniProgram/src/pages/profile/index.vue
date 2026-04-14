@@ -164,6 +164,7 @@ import { wechatLogin, uploadAvatar } from '@/api/auth'
 import { checkIn, getCheckInStatus, getFavorites } from '@/api/user'
 import { fetchPassport } from '@/api/study'
 import { fetchOrders } from '@/api/shop'
+import { resolveAssetUrl } from '@/utils/url'
 
 const stBar = ref(20)
 const isLogin = ref(false)
@@ -234,7 +235,7 @@ onMounted(() => {
   if (token && u) {
     isLogin.value = true
     userName.value = u.nickname || '微信用户'
-    userAvatar.value = u.avatarUrl || u.avatar || ''
+    userAvatar.value = resolveAssetUrl(u.avatarUrl || u.avatar || '')
     loadUserData(u.userId)
   }
 })
@@ -310,7 +311,7 @@ const goLogin = () => {
           uni.setStorageSync('userInfo', data)
           isLogin.value = true
           userName.value = data.nickname || '微信用户'
-          userAvatar.value = data.avatarUrl || data.avatar || ''
+          userAvatar.value = resolveAssetUrl(data.avatarUrl || data.avatar || '')
           uni.hideLoading()
           uni.showToast({ title: '登录成功', icon: 'success' })
           loadUserData(data.userId)
@@ -406,7 +407,7 @@ const saveProfile = async () => {
       }
       uni.setStorageSync('userInfo', newUser)
       userName.value = newUser.nickname || '微信用户'
-      userAvatar.value = newUser.avatarUrl || ''
+      userAvatar.value = resolveAssetUrl(newUser.avatarUrl || '')
     }
 
     showProfilePopup.value = false

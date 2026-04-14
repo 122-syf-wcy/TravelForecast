@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="behavior-container text-gray-800">
     <div class="page-header mb-6">
       <h2 class="text-2xl font-bold text-gray-800">用户行为分析</h2>
@@ -146,6 +146,15 @@ const timeChart = ref()
 const featureChart = ref()
 const durationChart = ref()
 
+const onChartsResize = () => {
+  const t = timeChart.value
+  const f = featureChart.value
+  const d = durationChart.value
+  if (t) echarts.getInstanceByDom(t)?.resize()
+  if (f) echarts.getInstanceByDom(f)?.resize()
+  if (d) echarts.getInstanceByDom(d)?.resize()
+}
+
 // 加载统计数据
 const loadStatistics = async () => {
   try {
@@ -227,7 +236,6 @@ const initTimeChart = async () => {
           }
         }]
       })
-      window.addEventListener('resize', () => chart1.resize())
     }
   } catch (error: any) {
     console.error('加载访问时段数据失败:', error)
@@ -274,7 +282,6 @@ const initFeatureChart = async () => {
           barWidth: '50%'
         }]
       })
-      window.addEventListener('resize', () => chart2.resize())
     }
   } catch (error: any) {
     console.error('加载功能使用排行失败:', error)
@@ -330,7 +337,6 @@ const initDurationChart = async () => {
           data: pieData
         }]
       })
-      window.addEventListener('resize', () => chart3.resize())
     }
   } catch (error: any) {
     console.error('加载停留时长分布失败:', error)
@@ -351,9 +357,11 @@ onMounted(() => {
   nextTick(() => {
     initCharts()
   })
+  window.addEventListener('resize', onChartsResize)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', onChartsResize)
   [timeChart, featureChart, durationChart].forEach(r => {
     if (r.value) {
       const inst = echarts.getInstanceByDom(r.value)

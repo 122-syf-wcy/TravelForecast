@@ -10,6 +10,7 @@ import org.springframework.web.filter.CorsFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 跨域配置
@@ -47,8 +48,11 @@ public class CorsConfig {
                 "http://127.0.0.1:5175"
             ));
         } else {
-            // 生产环境：使用配置的前端地址
-            allowedOrigins.add(frontendUrl);
+            // 生产环境：支持多个前端地址，使用英文逗号分隔
+            allowedOrigins.addAll(Arrays.stream(frontendUrl.split(","))
+                    .map(String::trim)
+                    .filter(origin -> !origin.isEmpty())
+                    .collect(Collectors.toList()));
             // 同时允许本地访问
             allowedOrigins.addAll(Arrays.asList(
                 "http://localhost:3000",

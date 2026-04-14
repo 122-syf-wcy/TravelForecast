@@ -8,11 +8,12 @@
         <div class="voice-ripple"></div>
         <video 
           ref="avatarVideo" 
-          src="/videos/avatar.mp4" 
+          src="/videos/avatar-lite.mp4" 
           class="avatar-video" 
           loop 
           muted 
           playsinline
+          preload="auto"
           poster="/videos/avatar-poster.jpg"
           @error="handleVideoError"
         ></video>
@@ -108,9 +109,9 @@ const handleVideoError = () => {
 const messagesContainer = ref<HTMLElement | null>(null)
 const avatarVideo = ref<HTMLVideoElement | null>(null)
 
-// WebSocket - 通过AI服务代理，降级时直连旧数字人后端
-const wsBase = import.meta.env.VITE_WS_BASE_URL || `ws://${window.location.hostname}:${window.location.port}`
-const WS_URL_AI_PROXY = `${wsBase}/ai-api/ws/digital-human`
+// WebSocket - 直连数字人后端（有LLM+TTS缓存）
+const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+const wsBase = import.meta.env.VITE_WS_BASE_URL || `${wsProtocol}//${window.location.host}`
 const WS_URL_DIRECT = `${wsBase}/ws/avatar`
 let ws: WebSocket | null = null
 let mediaRecorder: MediaRecorder | null = null
@@ -122,9 +123,11 @@ const MAX_RECONNECT_ATTEMPTS = 3
 let heartbeatInterval: ReturnType<typeof setInterval> | null = null
 let useHttpFallback = false
 
-// ========== AudioContext 解决浏览器自动播放限制 ==========
+// ========== AudioContext + 音频队列 ==========
 let audioCtx: AudioContext | null = null
 let currentSource: AudioBufferSourceNode | null = null
+let audioQueue: Blob[] = []
+let isPlayingQueue = false
 
 const ensureAudioContext = (): AudioContext => {
   if (!audioCtx) {
@@ -165,6 +168,13 @@ onMounted(() => {
   document.addEventListener('click', unlockAudioContext)
   document.addEventListener('touchstart', unlockAudioContext)
   ensureAudioContext()
+  
+  // 预加载头像视频，避免首次说话时卡顿
+  nextTick(() => {
+    if (avatarVideo.value) {
+      avatarVideo.value.load()
+    }
+  })
   
   scrollToBottom()
 })
@@ -226,7 +236,7 @@ const connectWebSocket = () => {
     return
   }
 
-  const url = reconnectAttempts < 2 ? WS_URL_AI_PROXY : WS_URL_DIRECT
+  const url = WS_URL_DIRECT
   console.log(`🔗 嵌入式数字人尝试连接 (第${reconnectAttempts + 1}次):`, url)
   
   try {
@@ -412,25 +422,38 @@ const sendAudio = (blob: Blob) => {
 const playAudioWithText = async (blob: Blob) => {
   console.log('嵌入式数字人收到音频, size:', blob.size)
   
-  // 清除文字超时计时器，防止重复显示
   if (textFallbackTimer) {
     clearTimeout(textFallbackTimer)
     textFallbackTimer = null
   }
   
-  // 先显示文字
   if (pendingText) {
     addMessage('assistant', pendingText)
     pendingText = null
   }
   isTyping.value = false
 
+  // 入队并驱动播放
+  audioQueue.push(blob)
+  if (!isPlayingQueue) {
+    playNextInQueue()
+  }
+}
+
+const playNextInQueue = async () => {
+  if (audioQueue.length === 0) {
+    isPlayingQueue = false
+    stopSpeaking()
+    return
+  }
+
+  isPlayingQueue = true
+  startSpeaking()
+  const blob = audioQueue.shift()!
+
   try {
-    // 优先使用 AudioContext 播放（不受浏览器自动播放限制）
     const ctx = ensureAudioContext()
-    if (ctx.state === 'suspended') {
-      await ctx.resume().catch(() => {})
-    }
+    if (ctx.state === 'suspended') await ctx.resume().catch(() => {})
 
     const arrayBuffer = await blob.arrayBuffer()
     const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
@@ -442,12 +465,9 @@ const playAudioWithText = async (blob: Blob) => {
     currentSource.buffer = audioBuffer
     currentSource.connect(ctx.destination)
     currentSource.start(0)
-    console.log('嵌入式 AudioContext 音频开始播放')
-    startSpeaking()
 
     currentSource.onended = () => {
-      console.log('嵌入式音频播放结束')
-      stopSpeaking()
+      playNextInQueue()
     }
   } catch (e) {
     console.warn('AudioContext播放失败，降级到Audio元素:', e)
@@ -456,15 +476,14 @@ const playAudioWithText = async (blob: Blob) => {
     currentAudio = new Audio(url)
     try {
       await currentAudio.play()
-      startSpeaking()
       currentAudio.onended = () => {
-        stopSpeaking()
         URL.revokeObjectURL(url)
+        playNextInQueue()
       }
     } catch (e2) {
-      console.error('嵌入式音频播放完全失败:', e2)
-      stopSpeaking()
+      console.error('嵌入式音频播放失败:', e2)
       URL.revokeObjectURL(url)
+      playNextInQueue()
     }
   }
 }
@@ -472,13 +491,20 @@ const playAudioWithText = async (blob: Blob) => {
 const startSpeaking = () => {
   isSpeaking.value = true
   currentStatus.value = 'speaking'
-  avatarVideo.value?.play().catch(() => {})
+  const vid = avatarVideo.value
+  if (!vid) return
+  if (vid.error || vid.readyState === 0) {
+    vid.load()
+    vid.addEventListener('canplay', () => vid.play().catch(() => {}), { once: true })
+  } else {
+    vid.play().catch(() => {})
+  }
 }
 
 const stopSpeaking = () => {
   isSpeaking.value = false
   currentStatus.value = 'idle'
-  avatarVideo.value?.pause()
+  // 不再调用 pause()，让视频持续处于可播放状态，减少下次播放的启动延迟
 }
 </script>
 

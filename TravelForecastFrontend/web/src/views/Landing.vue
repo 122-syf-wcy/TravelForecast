@@ -420,8 +420,8 @@ const fetchLandingData = async () => {
         .filter((s: any) => s.url && s.url.trim() !== '') // 过滤掉没有 URL 的项
         .map((s: any) => ({
           ...s,
-          url: s.url, // OSS 签名 URL 已经是完整的，不需要再处理
-          cover: s.cover || ''
+          url: getImageUrl(s.url), // 通过代理访问 OSS 资源，避免 Referer 403
+          cover: s.cover ? getImageUrl(s.cover) : ''
         }))
       console.log('Showcases loaded:', showcases.value.length, showcases.value)
     } else {
@@ -478,10 +478,26 @@ onMounted(() => {
     // 重新观察新渲染的 reveal 元素
     observeRevealElements()
   })
-  nextTick(() => renderModelChart())
-  // 初始观察
+  // 图表懒初始化：进入视口再渲染，避免首屏阻塞
+  nextTick(() => {
+    if (modelChartRef.value) {
+      chartObserver = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            renderModelChart()
+            chartObserver?.disconnect()
+            chartObserver = null
+          }
+        },
+        { rootMargin: '200px' }
+      )
+      chartObserver.observe(modelChartRef.value)
+    }
+  })
   observeRevealElements()
 })
+
+let chartObserver: IntersectionObserver | null = null
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll)
@@ -490,6 +506,10 @@ onBeforeUnmount(() => {
   if (revealObserver) {
     revealObserver.disconnect()
     revealObserver = null
+  }
+  if (chartObserver) {
+    chartObserver.disconnect()
+    chartObserver = null
   }
 })
 </script>

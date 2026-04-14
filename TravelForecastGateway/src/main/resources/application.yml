@@ -44,6 +44,8 @@ spring:
               - "http://39.97.232.141"
               - "http://39.97.232.141:80"
               - "http://39.97.232.141:8888"
+              - "https://travel.dongsiwei.com"
+              - "http://travel.dongsiwei.com"
               - "http://localhost:3000"
               - "http://localhost:5173"
             allowed-methods:

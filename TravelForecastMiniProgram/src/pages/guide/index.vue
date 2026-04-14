@@ -24,21 +24,21 @@
       :show-compass="true"
       @markertap="onMarkerTap"
     >
-      <!-- 地图控件（用 view 替代 cover-view） -->
-      <view class="map-ctrls">
-        <view class="m-btn" @tap="moveToMe">
-          <view class="m-btn-dot" />
-          <text class="m-btn-t">定位</text>
-        </view>
-        <view class="m-btn m-btn-ai" @tap="startGuide">
-          <text class="m-btn-ai-t">AI</text>
-          <text class="m-btn-t" style="color:#fff;">讲解</text>
-        </view>
-        <view class="m-btn m-btn-quiz" v-if="studyMode" @tap="openQuiz">
-          <text class="m-btn-q-t">?</text>
-          <text class="m-btn-t" style="color:#fff;">答题</text>
-        </view>
-      </view>
+      <!-- 地图控件（原生组件内部必须使用 cover-view） -->
+      <cover-view class="map-ctrls">
+        <cover-view class="m-btn" @tap="moveToMe">
+          <cover-view class="m-btn-dot" />
+          <cover-view class="m-btn-t">定位</cover-view>
+        </cover-view>
+        <cover-view class="m-btn m-btn-ai" @tap="startGuide">
+          <cover-view class="m-btn-ai-t">AI</cover-view>
+          <cover-view class="m-btn-t" style="color:#fff;">讲解</cover-view>
+        </cover-view>
+        <cover-view class="m-btn m-btn-quiz" v-if="studyMode" @tap="openQuiz">
+          <cover-view class="m-btn-q-t">?</cover-view>
+          <cover-view class="m-btn-t" style="color:#fff;">答题</cover-view>
+        </cover-view>
+      </cover-view>
     </map>
 
     <!-- 到达提醒 -->

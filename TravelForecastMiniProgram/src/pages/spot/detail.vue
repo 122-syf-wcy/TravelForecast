@@ -1,45 +1,67 @@
 <template>
   <view class="spot-page">
-    <image class="spot-cover" :src="coverUrl" mode="aspectFill" />
+    <!-- 沉浸式封面 -->
+    <view class="cover-wrap">
+      <image class="spot-cover" :src="coverUrl" mode="aspectFill" />
+      <view class="cover-mask" />
+      <view class="cover-back" @tap="goBack">
+        <text class="cover-back-icon">‹</text>
+      </view>
+      <view class="cover-title-area">
+        <text class="cover-name">{{ spot.name || '景区详情' }}</text>
+        <text class="cover-addr">{{ spot.address || '六盘水' }}</text>
+      </view>
+    </view>
+
+    <!-- 信息卡片 -->
     <view class="spot-card">
-      <text class="spot-name">{{ spot.name || '景区详情' }}</text>
-      <text class="spot-meta">{{ spot.address || '六盘水' }}</text>
       <view class="spot-tags" v-if="tagList.length > 0">
         <view class="spot-tag" v-for="(t, i) in tagList" :key="i">
           <text class="spot-tag-t">{{ t }}</text>
         </view>
       </view>
-      <view class="spot-row">
-        <text class="spot-row-l">评分</text>
-        <text class="spot-row-r">{{ spot.rating ? spot.rating.toFixed(1) : '4.5' }}</text>
-      </view>
-      <view class="spot-row" v-if="spot.openingHours">
-        <text class="spot-row-l">开放时间</text>
-        <text class="spot-row-r">{{ spot.openingHours }}</text>
-      </view>
-      <view class="spot-row" v-if="spot.price">
-        <text class="spot-row-l">门票</text>
-        <text class="spot-row-r">{{ spot.price }}</text>
+      <view class="info-grid">
+        <view class="info-item">
+          <text class="info-val">{{ spot.rating ? spot.rating.toFixed(1) : '4.5' }}</text>
+          <text class="info-lbl">评分</text>
+        </view>
+        <view class="info-divider" />
+        <view class="info-item" v-if="spot.openingHours">
+          <text class="info-val">{{ spot.openingHours }}</text>
+          <text class="info-lbl">开放时间</text>
+        </view>
+        <view class="info-divider" v-if="spot.openingHours && spot.price" />
+        <view class="info-item" v-if="spot.price">
+          <text class="info-val">{{ spot.price }}</text>
+          <text class="info-lbl">门票</text>
+        </view>
       </view>
       <view class="spot-row" v-if="spot.currentFlow !== null && spot.currentFlow !== undefined">
         <text class="spot-row-l">实时客流</text>
-        <text class="spot-row-r">{{ spot.currentFlow }} 人</text>
+        <text class="spot-row-r flow-tag">{{ spot.currentFlow }} 人</text>
       </view>
     </view>
 
-    <view class="spot-desc" v-if="spot.fullDescription || spot.description">
-      <text class="spot-desc-title">景区介绍</text>
+    <!-- 景区介绍 -->
+    <view class="spot-section" v-if="spot.fullDescription || spot.description">
+      <view class="section-hd">
+        <view class="section-bar" />
+        <text class="section-title">景区介绍</text>
+      </view>
       <text class="spot-desc-text">{{ spot.fullDescription || spot.description }}</text>
     </view>
 
     <!-- 景区内景点列表 -->
-    <view class="spot-sub-section" v-if="subSpots.length > 0">
-      <text class="spot-desc-title">景区内景点</text>
+    <view class="spot-section" v-if="subSpots.length > 0">
+      <view class="section-hd">
+        <view class="section-bar" />
+        <text class="section-title">景区内景点</text>
+      </view>
       <view class="sub-spot-list">
         <view class="sub-spot-card" v-for="(sub, i) in subSpots" :key="i" @tap="onSubSpotTap(sub)">
           <image 
             class="sub-spot-img" 
-            :src="sub.imageUrl || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=60'" 
+            :src="sub.imageUrl || '/static/default-spot.svg'" 
             mode="aspectFill" 
           />
           <view class="sub-spot-info">
@@ -56,13 +78,21 @@
       </view>
     </view>
 
-    <view class="spot-gallery" v-if="images.length > 0">
-      <text class="spot-desc-title">图片</text>
+    <!-- 图片画廊 -->
+    <view class="spot-section" v-if="images.length > 0">
+      <view class="section-hd">
+        <view class="section-bar" />
+        <text class="section-title">图片</text>
+      </view>
       <scroll-view scroll-x class="spot-gallery-row" :show-scrollbar="false">
         <image class="spot-gallery-img" v-for="(img, i) in images" :key="i" :src="img" mode="aspectFill" />
       </scroll-view>
     </view>
 
+    <!-- 底部留白（给固定操作栏让位） -->
+    <view style="height: 80px;" />
+
+    <!-- 固定底部操作栏 -->
     <view class="spot-actions">
       <view class="spot-btn spot-btn-fav" @tap="toggleFav">
         <text class="spot-btn-t" :style="{ color: isFav ? '#e74c3c' : '#999' }">{{ isFav ? '♥ 已收藏' : '♡ 收藏' }}</text>
@@ -85,7 +115,7 @@ import { checkFavorite, addFavorite, removeFavorite } from '@/api/user'
 import { resolveAssetUrl } from '@/utils/url'
 
 const spot = ref({})
-const coverUrl = ref('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80')
+const coverUrl = ref('/static/default-spot.svg')
 const images = ref([])
 const tagList = ref([])
 const subSpots = ref([])
@@ -186,6 +216,10 @@ const onNav = () => {
   })
 }
 
+const goBack = () => {
+  uni.navigateBack({ delta: 1 })
+}
+
 const onGuide = () => {
   const name = spot.value.name || ''
   uni.navigateTo({ url: `/pages/digital-human/index?spot=${encodeURIComponent(name)}` })
@@ -204,42 +238,76 @@ onLoad((options) => {
 @import "@/uni.scss";
 
 .spot-page { min-height: 100vh; background: #F2F5F8; }
-.spot-cover { width: 100%; height: 240px; }
-.spot-card {
-  margin: -30px 16px 0;
-  background: #fff;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+
+/* 沉浸式封面 */
+.cover-wrap { position: relative; width: 100%; height: 300px; }
+.spot-cover { width: 100%; height: 100%; }
+.cover-mask {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 50%;
+  background: linear-gradient(to top, rgba(0,0,0,0.55), transparent);
 }
-.spot-name { font-size: 18px; font-weight: 800; color: #1A1A2E; }
-.spot-meta { display: block; font-size: 12px; color: #888; margin-top: 4px; }
-.spot-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.spot-tag { padding: 2px 8px; background: #E0F2F1; border-radius: 20px; }
-.spot-tag-t { font-size: 10px; color: #2A9D8F; }
-.spot-row { display: flex; justify-content: space-between; margin-top: 10px; }
-.spot-row-l { font-size: 12px; color: #666; }
-.spot-row-r { font-size: 12px; color: #1A1A2E; font-weight: 600; }
-.spot-desc { margin: 12px 16px 0; background: #fff; border-radius: 16px; padding: 16px; }
-.spot-desc-title { font-size: 14px; font-weight: 700; color: #1A1A2E; }
-.spot-desc-text { display: block; margin-top: 8px; font-size: 12px; color: #666; line-height: 1.6; }
-.spot-gallery { margin: 12px 16px 0; background: #fff; border-radius: 16px; padding: 16px; }
-.spot-gallery-row { margin-top: 8px; white-space: nowrap; }
-.spot-gallery-img { width: 140px; height: 90px; border-radius: 10px; margin-right: 8px; display: inline-block; }
-.spot-actions { margin: 14px 16px 24px; display: flex; gap: 10px; }
-.spot-btn-fav { background: #fff; border: 1px solid #eee; }
+.cover-back {
+  position: absolute; top: 48px; left: 16px;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;
+}
+.cover-back-icon { font-size: 24px; color: #fff; margin-top: -2px; }
+.cover-title-area { position: absolute; left: 20px; bottom: 20px; }
+.cover-name { font-size: 22px; font-weight: 800; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.cover-addr { display: block; font-size: 12px; color: rgba(255,255,255,0.85); margin-top: 4px; }
+
+/* 信息卡片 */
+.spot-card {
+  margin: -24px 16px 0; position: relative; z-index: 2;
+  background: #fff; border-radius: 16px; padding: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.spot-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.spot-tag { padding: 3px 10px; background: #E0F2F1; border-radius: 20px; }
+.spot-tag-t { font-size: 11px; color: #2A9D8F; font-weight: 500; }
+.info-grid {
+  display: flex; align-items: center; justify-content: space-around;
+  margin-top: 14px; padding: 12px 0;
+  border-top: 1px solid #F0F0F0; border-bottom: 1px solid #F0F0F0;
+}
+.info-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.info-val { font-size: 14px; font-weight: 700; color: #1A1A2E; text-align: center; }
+.info-lbl { font-size: 10px; color: #999; margin-top: 4px; }
+.info-divider { width: 1px; height: 28px; background: #F0F0F0; }
+.spot-row { display: flex; justify-content: space-between; margin-top: 12px; align-items: center; }
+.spot-row-l { font-size: 13px; color: #666; }
+.spot-row-r { font-size: 13px; color: #1A1A2E; font-weight: 600; }
+.flow-tag { padding: 2px 10px; background: #FFF3E0; border-radius: 20px; color: #E65100; font-size: 12px; }
+
+/* 通用 section */
+.spot-section { margin: 12px 16px 0; background: #fff; border-radius: 16px; padding: 16px; }
+.section-hd { display: flex; align-items: center; margin-bottom: 12px; }
+.section-bar { width: 3px; height: 16px; background: #2A9D8F; border-radius: 2px; margin-right: 8px; }
+.section-title { font-size: 15px; font-weight: 700; color: #1A1A2E; }
+.spot-desc-text { display: block; font-size: 13px; color: #555; line-height: 1.8; white-space: pre-wrap; }
+
+/* 图片画廊 */
+.spot-gallery-row { margin-top: 4px; white-space: nowrap; }
+.spot-gallery-img { width: 140px; height: 96px; border-radius: 10px; margin-right: 8px; display: inline-block; }
+
+/* 底部操作栏 */
+.spot-actions {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  display: flex; gap: 10px; padding: 12px 16px;
+  background: #fff; box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+  z-index: 100;
+}
 .spot-btn { flex: 1; padding: 12px; border-radius: 12px; text-align: center; }
-.spot-btn-primary { background: #2A9D8F; }
+.spot-btn-fav { background: #fff; border: 1px solid #eee; }
+.spot-btn-primary { background: linear-gradient(135deg, #2A9D8F, #26A69A); }
 .spot-btn-light { background: #E0F2F1; border: 1px solid rgba(42,157,143,0.2); }
 .spot-btn-t { font-size: 14px; font-weight: 600; color: #fff; }
 .spot-btn-light .spot-btn-t { color: #2A9D8F; }
 
 /* 子景点列表 */
-.spot-sub-section { margin: 12px 16px 0; background: #fff; border-radius: 16px; padding: 16px; }
-.sub-spot-list { margin-top: 10px; }
+.sub-spot-list { margin-top: 4px; }
 .sub-spot-card {
-  display: flex;
-  padding: 10px 0;
+  display: flex; padding: 10px 0;
   border-bottom: 1px solid #F0F0F0;
 }
 .sub-spot-card:last-child { border-bottom: none; }

@@ -158,6 +158,7 @@ onMounted(() => {
 
     // 添加脉冲动画样式
     const style = document.createElement('style')
+    style.setAttribute('data-terrain-map', '')
     style.textContent = `
       @keyframes pulse {
         0%, 100% { transform: scale(1); opacity: 1; }
@@ -201,6 +202,8 @@ onBeforeUnmount(() => {
     map.remove()
     map = null
   }
+  const injectedStyle = document.head.querySelector('style[data-terrain-map]')
+  if (injectedStyle) injectedStyle.remove()
 })
 </script>
 

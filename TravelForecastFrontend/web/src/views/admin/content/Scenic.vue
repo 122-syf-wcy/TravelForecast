@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="scenic-list">
     <div class="page-header mb-6">
       <h1 class="text-2xl text-gray-800 mb-2">景区管理</h1>
@@ -283,6 +283,12 @@ import * as echarts from 'echarts'
 const searchQuery = ref('')
 const chartTimeRange = ref('month')
 const visitorChartRef = ref<HTMLElement | null>(null)
+
+const onChartsResize = () => {
+  const el = visitorChartRef.value
+  if (el) echarts.getInstanceByDom(el)?.resize()
+}
+
 const loading = ref(false)
 const tableData = ref<any[]>([])
 const scenicStats = reactive({ total: 0, totalVisitors: 0, avgRating: 0 })
@@ -324,8 +330,18 @@ const statusOptions = [
 ]
 
 // ================= 生命周期 =================
-onMounted(() => { initVisitorChart(); loadScenicList() })
-onBeforeUnmount(() => { if (visitorChartRef.value) { const inst = echarts.getInstanceByDom(visitorChartRef.value); if (inst) inst.dispose() } })
+onMounted(() => {
+  initVisitorChart()
+  loadScenicList()
+  window.addEventListener('resize', onChartsResize)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onChartsResize)
+  if (visitorChartRef.value) {
+    const inst = echarts.getInstanceByDom(visitorChartRef.value)
+    if (inst) inst.dispose()
+  }
+})
 
 // ================= 辅助函数 =================
 const getLevelStyle = (l: string) => ({ '5A': 'danger', '4A': 'warning', '3A': 'success', '2A': 'info', '1A': 'info' }[l] || '')
@@ -480,7 +496,6 @@ const initVisitorChart = () => {
       ]
     }
     myChart.setOption(option)
-    window.addEventListener('resize', () => myChart.resize())
   })
 }
 </script>

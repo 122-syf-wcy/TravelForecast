@@ -23,7 +23,7 @@
             <div class="mini-avatar" :class="{ 'speaking': isSpeaking }">
               <video 
                 ref="avatarVideo" 
-                src="/videos/avatar.mp4" 
+                src="/videos/avatar-lite.mp4" 
                 poster="/videos/avatar-poster.jpg"
                 class="mini-avatar-video" 
                 loop 
@@ -153,9 +153,9 @@ const messagesContainer = ref<HTMLElement | null>(null)
 const avatarVideo = ref<HTMLVideoElement | null>(null)
 const chatPanel = ref<HTMLElement | null>(null)
 
-// WebSocket - 通过AI服务代理，降级时直连旧数字人后端
-const wsBase = import.meta.env.VITE_WS_BASE_URL || `ws://${window.location.hostname}:${window.location.port}`
-const WS_URL_AI_PROXY = `${wsBase}/ai-api/ws/digital-human`
+// WebSocket - 直连数字人后端（有LLM+TTS缓存）
+const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+const wsBase = import.meta.env.VITE_WS_BASE_URL || `${wsProtocol}//${window.location.host}`
 const WS_URL_DIRECT = `${wsBase}/ws/avatar`
 let ws: WebSocket | null = null
 let mediaRecorder: MediaRecorder | null = null
@@ -173,6 +173,8 @@ let audioCtx: AudioContext | null = null
 let currentSource: AudioBufferSourceNode | null = null
 let pendingAudioBlobs: Blob[] = []
 let audioUnlocked = false
+let audioQueue: Blob[] = []
+let isPlayingQueue = false
 
 const ensureAudioContext = (): AudioContext => {
   if (!audioCtx) {
@@ -198,10 +200,11 @@ const unlockAudioContext = () => {
 
 const drainPendingAudio = async () => {
   if (pendingAudioBlobs.length === 0) return
-  const blob = pendingAudioBlobs.shift()!
+  audioQueue.push(...pendingAudioBlobs)
   pendingAudioBlobs = []
-  console.log('[Audio] 播放缓存的音频, size:', blob.size)
-  await actualPlayAudio(blob)
+  if (!isPlayingQueue) {
+    playQueueNext()
+  }
 }
 
 const actualPlayAudio = async (blob: Blob) => {
@@ -223,8 +226,7 @@ const actualPlayAudio = async (blob: Blob) => {
     startSpeaking()
 
     currentSource.onended = () => {
-      console.log('音频播放结束')
-      stopSpeaking()
+      playQueueNext()
     }
   } catch (e) {
     console.warn('AudioContext播放失败，降级到Audio元素:', e)
@@ -233,16 +235,15 @@ const actualPlayAudio = async (blob: Blob) => {
     currentAudio = new Audio(url)
     try {
       await currentAudio.play()
-      console.log('Audio元素播放成功')
       startSpeaking()
       currentAudio.onended = () => {
-        stopSpeaking()
         URL.revokeObjectURL(url)
+        playQueueNext()
       }
     } catch (e2) {
-      console.error('音频播放完全失败:', e2)
-      stopSpeaking()
+      console.error('音频播放失败:', e2)
       URL.revokeObjectURL(url)
+      playQueueNext()
     }
   }
 }
@@ -332,6 +333,13 @@ onMounted(() => {
   document.addEventListener('keydown', unlockAudioContext, true)
   ensureAudioContext()
 
+  // 预加载视频（确保首次说话时能立即播放）
+  nextTick(() => {
+    if (avatarVideo.value) {
+      avatarVideo.value.load()
+    }
+  })
+
   // 首次挂载时也触发当前页面的导览（延迟等待 WS 连接）
   setTimeout(() => {
     digitalHumanStore.triggerPageNarration(route.path)
@@ -407,8 +415,8 @@ const connectWebSocket = () => {
     useHttpFallback = true
     return
   }
-  // 第一次尝试AI代理，失败后尝试直连
-  const url = reconnectAttempts < 2 ? WS_URL_AI_PROXY : WS_URL_DIRECT
+  // 直连数字人后端（有LLM+TTS缓存）
+  const url = WS_URL_DIRECT
   console.log(`🔗 尝试连接 WebSocket (第${reconnectAttempts + 1}次):`, url)
   try {
     ws = new WebSocket(url)
@@ -600,13 +608,37 @@ const playAudioWithText = async (blob: Blob) => {
     return
   }
 
+  // 入队并驱动播放
+  audioQueue.push(blob)
+  if (!isPlayingQueue) {
+    playQueueNext()
+  }
+}
+
+const playQueueNext = async () => {
+  if (audioQueue.length === 0) {
+    isPlayingQueue = false
+    stopSpeaking()
+    return
+  }
+  isPlayingQueue = true
+  startSpeaking()
+  const blob = audioQueue.shift()!
   await actualPlayAudio(blob)
 }
 
 const startSpeaking = () => {
   isSpeaking.value = true
   currentStatus.value = 'speaking'
-  avatarVideo.value?.play().catch(() => {})
+  const vid = avatarVideo.value
+  if (!vid) return
+  // 若视频处于错误状态（如之前 403），先 reload 再播放
+  if (vid.error || vid.readyState === 0) {
+    vid.load()
+    vid.addEventListener('canplay', () => vid.play().catch(() => {}), { once: true })
+  } else {
+    vid.play().catch(() => {})
+  }
 }
 
 const stopSpeaking = () => {

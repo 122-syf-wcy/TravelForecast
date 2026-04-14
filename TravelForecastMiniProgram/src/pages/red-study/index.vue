@@ -2,7 +2,7 @@
   <view class="page">
     <!-- 顶部 Banner -->
     <view class="hero">
-      <image class="hero-bg" src="https://images.unsplash.com/photo-1517299321609-52687d1bc55a?w=800&q=80" mode="aspectFill" />
+      <image class="hero-bg" src="/static/default-spot.svg" mode="aspectFill" />
       <view class="hero-mask" />
       <view class="hero-content">
         <text class="hero-title">红色研学之旅</text>
@@ -92,7 +92,7 @@
           <view class="qr-badge" :class="quizCorrect ? 'qr-ok' : 'qr-err'">
             <text class="qr-t">{{ quizCorrect ? '✓ 回答正确！+10 黔豆' : '✗ 回答错误' }}</text>
           </view>
-          <text class="qr-explain">{{ currentQuiz.explanation }}</text>
+          <text class="qr-explain">{{ quizExplanation || currentQuiz.explanation }}</text>
           <view class="qr-next" @tap="nextQuiz">
             <text class="qr-next-t">{{ quizIndex < quizList.length - 1 ? '下一题' : '完成答题' }}</text>
           </view>
@@ -140,9 +140,9 @@ const correctCount = ref(0)
 
 // ---- 研学基地 ----
 const bases = ref([
-  { id: 1, title: '贵州三线建设博物馆', desc: '全国首家三线建设主题博物馆，了解20世纪60-70年代三线建设伟大历程', loc: '钟山区', img: 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?w=400&q=80' },
-  { id: 2, title: '水城古镇三线记忆', desc: '600多年历史古镇里的红色印记，历史与现代的交融', loc: '水城区', img: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&q=80' },
-  { id: 3, title: '六枝特区三线遗址', desc: '探访老厂房，重温那段激情燃烧的岁月', loc: '六枝特区', img: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=80' }
+  { id: 1, title: '贵州三线建设博物馆', desc: '全国首家三线建设主题博物馆，了解20世纪60-70年代三线建设伟大历程', loc: '钟山区', img: '/static/default-spot.svg' },
+  { id: 2, title: '水城古镇三线记忆', desc: '600多年历史古镇里的红色印记，历史与现代的交融', loc: '水城区', img: '/static/default-spot.svg' },
+  { id: 3, title: '六枝特区三线遗址', desc: '探访老厂房，重温那段激情燃烧的岁月', loc: '六枝特区', img: '/static/default-spot.svg' }
 ])
 
 const loadBases = async () => {
@@ -158,7 +158,7 @@ const loadBases = async () => {
           id: s.id, title: s.name || '研学基地',
           desc: s.description || s.address || '',
           loc: s.city || s.address || '六盘水',
-          img: resolveAssetUrl(s.imageUrl) || 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?w=400&q=80'
+          img: resolveAssetUrl(s.imageUrl) || '/static/default-spot.svg'
         }))
       }
     }
@@ -171,6 +171,7 @@ const quizIndex = ref(0)
 const quizAnswered = ref(false)
 const quizPicked = ref(-1)
 const quizCorrect = ref(false)
+const quizExplanation = ref('')
 const quizTotal = computed(() => quizList.value.length)
 const currentQuiz = computed(() => {
   const q = quizList.value[quizIndex.value]
@@ -203,7 +204,7 @@ const pickAnswer = async (idx) => {
     try {
       const res = await submitQuizAnswer(u.userId, currentQuiz.value.id, idx)
       if (res && res.explanation) {
-        currentQuiz.value.explanation = res.explanation
+        quizExplanation.value = res.explanation
       }
     } catch (e) { /* 静默失败 */ }
   }
@@ -214,6 +215,7 @@ const nextQuiz = () => {
     quizIndex.value++
     quizAnswered.value = false
     quizPicked.value = -1
+    quizExplanation.value = ''
   } else {
     uni.showToast({ title: `答题完成！答对 ${correctCount.value} 题`, icon: 'none' })
   }

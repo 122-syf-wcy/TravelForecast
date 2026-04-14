@@ -18,7 +18,7 @@
       </view>
       <view class="item">
         <text class="item-l">当前版本</text>
-        <text class="item-val">v1.0.0</text>
+        <text class="item-val">v{{ appVersion }}</text>
       </view>
       <view class="item" @tap="goAbout">
         <text class="item-l">关于我们</text>
@@ -42,7 +42,7 @@
         <text class="popup-title">关于凉都智游</text>
         <text class="popup-text">凉都智游是六盘水市智慧旅游小程序，为游客提供景区导览、AI伴游、文创商城、红色研学等一站式旅游服务。</text>
         <text class="popup-text">由六盘水市文化广电旅游局指导开发。</text>
-        <text class="popup-text popup-ver">版本 v1.0.0</text>
+        <text class="popup-text popup-ver">版本 v{{ appVersion }}</text>
         <view class="popup-btn" @tap="showAbout = false">
           <text class="popup-btn-t">我知道了</text>
         </view>
@@ -77,11 +77,21 @@ const notifyOn = ref(true)
 const cacheSize = ref('0 KB')
 const showAbout = ref(false)
 const showPrivacy = ref(false)
+const appVersion = ref('1.0.0')
 
 onMounted(() => {
   const token = uni.getStorageSync('token')
   isLogin.value = !!token
   calcCache()
+  // 动态获取版本号
+  try {
+    // #ifdef MP-WEIXIN
+    const accountInfo = uni.getAccountInfoSync()
+    if (accountInfo && accountInfo.miniProgram && accountInfo.miniProgram.version) {
+      appVersion.value = accountInfo.miniProgram.version
+    }
+    // #endif
+  } catch (e) { /* 保留默认版本号 */ }
 })
 
 const calcCache = () => {

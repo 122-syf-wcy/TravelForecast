@@ -16,11 +16,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { loadSystemConfig } from '@/composables/useSystemConfig'
-import DigitalHuman from '@/components/DigitalHuman.vue'
+
+const DigitalHuman = defineAsyncComponent(() => import('@/components/DigitalHuman.vue'))
 
 // 初始化用户状态
 const userStore = useUserStore()

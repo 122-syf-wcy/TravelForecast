@@ -49,7 +49,18 @@ export function normalizeImageUrl(url: string | undefined | null): string {
     return DEFAULT_PLACEHOLDER
   }
 
-  // 如果已经是完整的 HTTP/HTTPS URL（包括 OSS URL），直接返回
+  // 如果是 OSS URL，转换为 Nginx 代理 URL（OSS bucket 不公开，需走代理）
+  // 与 Java toProxyUrl 保持一致：key 为 raw 路径，不做额外 URL 编码
+  if (url.includes('aliyuncs.com')) {
+    const ossPattern = /https?:\/\/[^/]+\.oss[^/]*\/([^?]+)/
+    const match = url.match(ossPattern)
+    if (match) {
+      return `/api/oss/proxy?key=${match[1]}`
+    }
+    return DEFAULT_PLACEHOLDER
+  }
+
+  // 如果是其他完整的 HTTP/HTTPS URL，直接返回
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url
   }

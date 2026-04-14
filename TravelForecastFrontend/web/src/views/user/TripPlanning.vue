@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="trip-planning-container">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- 左侧面板 -->
@@ -414,7 +414,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { ElMessage, ElNotification } from 'element-plus'
 import { Calendar, Ticket, Clock, User, Location, Star, Coin, Loading, Warning, Setting, TrendCharts, Money, MapLocation, MagicStick, Opportunity } from '@element-plus/icons-vue'
 import TripRouteMap from '@/components/TripRouteMap.vue'
@@ -498,6 +498,13 @@ const flowPredictionData = ref<Record<string, FlowPrediction[]>>({})
 // 地图相关
 const routeMapRef = ref<HTMLElement | null>(null)
 let routeMap: any = null
+
+/** 与 add/removeEventListener 使用同一引用，避免 initRouteMap 重复注册导致泄漏 */
+const routeMapResizeHandler = () => {
+  if (routeMap) {
+    routeMap.resize()
+  }
+}
 
 // 景点坐标数据（支持新旧两种code格式，使用数据库中的真实坐标）
 const spotCoordinates: Record<string, [number, number]> = {
@@ -1246,15 +1253,8 @@ const initRouteMap = () => {
       }
     }, 200)
     
-    // 处理窗口大小变化
-    const resizeHandler = () => {
-      if (routeMap) {
-        routeMap.resize()
-      }
-    }
-    
-    window.removeEventListener('resize', resizeHandler)
-    window.addEventListener('resize', resizeHandler)
+    window.removeEventListener('resize', routeMapResizeHandler)
+    window.addEventListener('resize', routeMapResizeHandler)
   } catch (error) {
     console.error('初始化地图失败:', error)
     // 显示错误信息
@@ -1691,6 +1691,14 @@ const loadScenicSpots = async () => {
 // 组件挂载时加载数据
 onMounted(() => {
   loadScenicSpots()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', routeMapResizeHandler)
+  if (routeMap) {
+    routeMap.dispose()
+    routeMap = null
+  }
 })
 </script>
 

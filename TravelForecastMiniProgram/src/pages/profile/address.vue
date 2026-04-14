@@ -75,24 +75,41 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { fetchAddressList, saveAddress, deleteAddress, setDefaultAddress } from '@/api/address'
 
 const STORAGE_KEY = 'addressList'
 const list = ref([])
 const showForm = ref(false)
 const editIndex = ref(-1)
-const form = ref({ name: '', phone: '', province: '', city: '', district: '', detail: '', isDefault: false })
+const form = ref({ id: null, name: '', phone: '', province: '', city: '', district: '', detail: '', isDefault: false })
 
-onMounted(() => {
-  list.value = uni.getStorageSync(STORAGE_KEY) || []
-})
+const getUserId = () => {
+  const u = uni.getStorageSync('userInfo')
+  return u && u.userId ? u.userId : null
+}
 
 const saveToStorage = () => {
   uni.setStorageSync(STORAGE_KEY, list.value)
 }
 
+onMounted(async () => {
+  const userId = getUserId()
+  if (userId) {
+    try {
+      const res = await fetchAddressList(userId)
+      if (Array.isArray(res) && res.length > 0) {
+        list.value = res
+        saveToStorage()
+        return
+      }
+    } catch (e) { /* 后端不可用时回退本地 */ }
+  }
+  list.value = uni.getStorageSync(STORAGE_KEY) || []
+})
+
 const resetForm = () => {
   editIndex.value = -1
-  form.value = { name: '', phone: '', province: '', city: '', district: '', detail: '', isDefault: false }
+  form.value = { id: null, name: '', phone: '', province: '', city: '', district: '', detail: '', isDefault: false }
 }
 
 const onRegion = (e) => {
@@ -102,12 +119,31 @@ const onRegion = (e) => {
   form.value.district = district
 }
 
-const saveAddr = () => {
+const saveAddr = async () => {
   if (!form.value.name.trim()) { uni.showToast({ title: '请输入收货人', icon: 'none' }); return }
   if (!form.value.phone.trim() || form.value.phone.length < 11) { uni.showToast({ title: '请输入正确手机号', icon: 'none' }); return }
   if (!form.value.province) { uni.showToast({ title: '请选择地区', icon: 'none' }); return }
   if (!form.value.detail.trim()) { uni.showToast({ title: '请输入详细地址', icon: 'none' }); return }
 
+  const userId = getUserId()
+  if (userId) {
+    try {
+      const saved = await saveAddress({ ...form.value, userId })
+      if (saved && saved.id) {
+        if (editIndex.value >= 0) {
+          list.value[editIndex.value] = saved
+        } else {
+          list.value.push(saved)
+        }
+        saveToStorage()
+        showForm.value = false
+        uni.showToast({ title: '保存成功', icon: 'success' })
+        return
+      }
+    } catch (e) { /* 后端失败时回退本地保存 */ }
+  }
+
+  // 本地兜底
   if (editIndex.value >= 0) {
     list.value[editIndex.value] = { ...form.value }
   } else {
@@ -129,8 +165,13 @@ const delAddr = (i) => {
   uni.showModal({
     title: '提示',
     content: '确认删除该地址？',
-    success: (res) => {
+    success: async (res) => {
       if (res.confirm) {
+        const addr = list.value[i]
+        const userId = getUserId()
+        if (userId && addr.id) {
+          try { await deleteAddress(addr.id, userId) } catch (e) { /* 静默 */ }
+        }
         list.value.splice(i, 1)
         saveToStorage()
         uni.showToast({ title: '已删除', icon: 'none' })
@@ -139,7 +180,12 @@ const delAddr = (i) => {
   })
 }
 
-const setDefault = (i) => {
+const setDefault = async (i) => {
+  const addr = list.value[i]
+  const userId = getUserId()
+  if (userId && addr.id) {
+    try { await setDefaultAddress(addr.id, userId) } catch (e) { /* 静默 */ }
+  }
   list.value.forEach((a, idx) => { a.isDefault = idx === i })
   saveToStorage()
 }

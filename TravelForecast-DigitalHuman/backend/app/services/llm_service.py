@@ -276,11 +276,14 @@ class LLMService:
         session_id: str, 
         user_message: str
     ) -> AsyncGenerator[str, None]:
-        """流式对话（带RAG增强 + Function Calling）"""
-        # RAG 检索
+        """
+        流式对话（带RAG增强 + Function Calling）
+        
+        优化：使用流式调用 + stream 中检测 tool_calls，
+        避免先做一次完整非流式调用的额外延迟。
+        """
         context, sources = await rag_service.retrieve_and_format(user_message)
         
-        # 构建增强消息
         enhanced_message = user_message
         if context:
             enhanced_message = f"用户问题：{user_message}\n\n相关参考资料：\n{context}"
@@ -289,36 +292,54 @@ class LLMService:
         self._add_message(session_id, "user", enhanced_message)
         
         try:
-            # 第一步：非流式调用检测是否需要函数调用（降低温度+限制Token加速）
-            first_response = await self.client.chat.completions.create(
+            stream = await self.client.chat.completions.create(
                 model=self.model,
                 messages=self._get_history(session_id),
                 temperature=0.5,
                 max_tokens=400,
                 tools=TOOLS,
-                tool_choice="auto"
+                tool_choice="auto",
+                stream=True
             )
             
-            message = first_response.choices[0].message
+            full_response = ""
+            tool_calls_acc: dict[int, dict] = {}
+            has_tool_calls = False
             
-            # 检查是否有函数调用
-            if message.tool_calls:
-                print(f"[Function] 检测到函数调用: {len(message.tool_calls)} 个")
+            async for chunk in stream:
+                delta = chunk.choices[0].delta
+                
+                if delta.tool_calls:
+                    has_tool_calls = True
+                    for tc in delta.tool_calls:
+                        idx = tc.index
+                        if idx not in tool_calls_acc:
+                            tool_calls_acc[idx] = {"name": "", "arguments": ""}
+                        if tc.function.name:
+                            tool_calls_acc[idx]["name"] += tc.function.name
+                        if tc.function.arguments:
+                            tool_calls_acc[idx]["arguments"] += tc.function.arguments
+                
+                elif delta.content:
+                    full_response += delta.content
+                    yield delta.content
+            
+            if has_tool_calls:
+                print(f"[Function] 流式检测到函数调用: {len(tool_calls_acc)} 个")
                 func_results = []
                 
-                for tool_call in message.tool_calls:
-                    func_name = tool_call.function.name
-                    func_args = json.loads(tool_call.function.arguments)
+                for idx in sorted(tool_calls_acc.keys()):
+                    tc = tool_calls_acc[idx]
+                    func_name = tc["name"]
+                    func_args = json.loads(tc["arguments"])
                     print(f"[Function] 执行: {func_name}, 参数: {func_args}")
                     func_result = await self._execute_function(func_name, func_args)
                     func_results.append(f"【{func_name}结果】\n{func_result}")
                 
-                # 将函数结果加入对话
                 combined_result = "\n\n".join(func_results)
                 self._add_message(session_id, "assistant", f"[工具调用结果]:\n{combined_result}")
                 
-                # 再次调用LLM生成最终回复（流式，限制Token加速）
-                stream = await self.client.chat.completions.create(
+                follow_up = await self.client.chat.completions.create(
                     model=self.model,
                     messages=self._get_history(session_id) + [
                         {"role": "user", "content": "请根据以上工具调用结果，用简洁友好的语言回答用户的问题。"}
@@ -329,7 +350,7 @@ class LLMService:
                 )
                 
                 full_response = ""
-                async for chunk in stream:
+                async for chunk in follow_up:
                     if chunk.choices[0].delta.content:
                         content = chunk.choices[0].delta.content
                         full_response += content
@@ -337,10 +358,7 @@ class LLMService:
                 
                 self._add_message(session_id, "assistant", full_response)
             else:
-                # 没有函数调用，直接返回内容
-                assistant_message = message.content
-                self._add_message(session_id, "assistant", assistant_message)
-                yield assistant_message
+                self._add_message(session_id, "assistant", full_response)
             
         except Exception as e:
             error_msg = f"抱歉，我遇到了一些问题：{str(e)}"

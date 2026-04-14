@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="data-prediction">
     <div class="page-header">
       <h1 class="text-2xl text-gray-800 mb-4">客流预测</h1>
@@ -217,6 +217,16 @@ import HolographicCard from '@/components/HolographicCard.vue'
 const weekTrendChartRef = ref<HTMLElement | null>(null)
 const dayDistributionChartRef = ref<HTMLElement | null>(null)
 const modelAccuracyChartRef = ref<HTMLElement | null>(null)
+
+const onChartsResize = () => {
+  const w = weekTrendChartRef.value
+  const d = dayDistributionChartRef.value
+  const m = modelAccuracyChartRef.value
+  if (w) echarts.getInstanceByDom(w)?.resize()
+  if (d) echarts.getInstanceByDom(d)?.resize()
+  if (m) echarts.getInstanceByDom(m)?.resize()
+}
+
 const selectedScenic = ref<number | undefined>(undefined)
 const selectedDay = ref<string>()
 const selectedModel = ref('dual_stream')
@@ -444,7 +454,6 @@ const initWeekTrendChart = async () => {
     }
     
     myChart.setOption(option)
-    window.addEventListener('resize', () => myChart.resize())
     ;(window as any).__weekTrendChart = myChart
   } catch (error) {
     console.error('初始化趋势图表失败', error)
@@ -499,7 +508,6 @@ const initDayDistributionChart = async () => {
     }
     
     myChart.setOption(option)
-    window.addEventListener('resize', () => myChart.resize())
     ;(window as any).__dayDistributionChart = myChart
   } catch (error) {
     console.error('初始化日内分布图表失败', error)
@@ -554,7 +562,6 @@ const initModelAccuracyChart = () => {
   }
   
   myChart.setOption(option)
-  window.addEventListener('resize', () => myChart.resize())
 }
 
 const updateWeekTrend = () => { initWeekTrendChart() }
@@ -585,9 +592,11 @@ const exportForecastCSV = () => {
 
 onMounted(() => {
   loadAllData()
+  window.addEventListener('resize', onChartsResize)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', onChartsResize)
   [weekTrendChartRef, dayDistributionChartRef, modelAccuracyChartRef].forEach(r => {
     if (r.value) {
       const inst = echarts.getInstanceByDom(r.value)

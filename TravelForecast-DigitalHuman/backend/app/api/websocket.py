@@ -146,95 +146,127 @@ async def handle_audio_message(session_id: str, audio_data: bytes):
         })
 
 
+import re as _re
+
+_SENTENCE_SPLIT_RE = _re.compile(r'(?<=[。！？；\n])')
+
+
+def _split_into_sentences(text: str) -> list[str]:
+    """将文本按中文句末标点拆分为句子列表"""
+    parts = _SENTENCE_SPLIT_RE.split(text)
+    return [s for s in parts if s.strip()]
+
+
 async def process_user_input(session_id: str, user_text: str):
     """
-    处理用户输入并生成回复（带缓存加速）
+    处理用户输入并生成回复（带缓存 + 分句流式 TTS 管道）
 
-    缓存策略：
-    1. 先查LLM回复缓存 → 命中则跳过LLM调用（省~8秒）
-    2. 再查TTS音频缓存 → 命中则跳过TTS合成（省~6秒）
-    3. 全部命中 → 毫秒级返回（省~14秒）
+    优化策略：
+    - 缓存全命中 → 毫秒级返回
+    - 缓存未命中 → LLM 边流式输出，边对已完成的句子做 TTS，
+      第一句音频合成完就立刻推送，大幅降低用户感知延迟
     """
     import time as _time
     start_time = _time.time()
-    print(f"[LLM] 处理输入: {user_text[:30]}...")
+    print(f"[Pipeline] 处理输入: {user_text[:30]}...")
 
     try:
-        # ========== 1. 查LLM回复缓存 ==========
+        # ========== 1. 查 LLM 回复缓存 ==========
         cached_response = cache_service.get_llm_response(user_text)
 
         if cached_response:
-            # --- 缓存命中：跳过LLM调用 ---
             full_response = cached_response
-            print(f"[LLM] 缓存命中! 跳过API调用 ({len(full_response)} 字符)")
+            print(f"[LLM] 缓存命中! ({len(full_response)} 字符)")
 
-            # 直接发送完整文本（不需要流式）
             await manager.send_json(session_id, {
                 "type": "text_output",
                 "data": {"text": full_response, "isPartial": False}
             })
 
-            # 同时把缓存的回复加入对话历史（保持上下文一致）
             llm_service._add_message(session_id, "user", user_text)
             llm_service._add_message(session_id, "assistant", full_response)
-        else:
-            # --- 缓存未命中：调用LLM ---
+
+            # 缓存命中时也走整段 TTS 缓存
+            cached_audio = cache_service.get_tts_audio(full_response)
+            if cached_audio:
+                print(f"[TTS] 缓存命中! ({len(cached_audio)} bytes)")
+                await manager.send_bytes(session_id, cached_audio)
+            else:
+                audio_data = await speech_service.text_to_speech(full_response)
+                if audio_data:
+                    cache_service.set_tts_audio(full_response, audio_data)
+                    await manager.send_bytes(session_id, audio_data)
+
             await manager.send_json(session_id, {
                 "type": "status",
-                "data": {"status": "thinking", "message": "正在思考..."}
+                "data": {"status": "idle", "message": ""}
             })
+            elapsed = _time.time() - start_time
+            print(f"[OK] 缓存路径完成, 耗时: {elapsed:.2f}秒")
+            return
 
-            full_response = ""
-            chunk_count = 0
+        # ========== 2. 缓存未命中：流式 LLM + 分句 TTS 管道 ==========
+        await manager.send_json(session_id, {
+            "type": "status",
+            "data": {"status": "thinking", "message": "正在思考..."}
+        })
 
-            print("[LLM] 生成中: ", end="", flush=True)
-            async for chunk in llm_service.chat_stream(session_id, user_text):
-                chunk_count += 1
-                full_response += chunk
-                print(".", end="", flush=True)
+        full_response = ""
+        sentence_buffer = ""
+        first_audio_sent = False
 
-                await manager.send_json(session_id, {
-                    "type": "text_output",
-                    "data": {"text": chunk, "isPartial": True}
-                })
+        async for chunk in llm_service.chat_stream(session_id, user_text):
+            full_response += chunk
+            sentence_buffer += chunk
 
-            print(f" 完成! ({chunk_count} chunks, {len(full_response)} 字符)")
+            # 检测是否有完整句子
+            sentences = _split_into_sentences(sentence_buffer)
+            if len(sentences) > 1:
+                # 最后一段可能不完整，留在 buffer 中
+                complete_sentences = sentences[:-1]
+                sentence_buffer = sentences[-1]
 
-            # 发送完整文本
-            await manager.send_json(session_id, {
-                "type": "text_output",
-                "data": {"text": full_response, "isPartial": False}
-            })
+                for sentence in complete_sentences:
+                    sentence = sentence.strip()
+                    if not sentence:
+                        continue
 
-            # 缓存LLM回复
-            cache_service.set_llm_response(user_text, full_response)
+                    if not first_audio_sent:
+                        # 第一句合成完就立刻推送文字 + 音频
+                        await manager.send_json(session_id, {
+                            "type": "text_output",
+                            "data": {"text": full_response, "isPartial": True}
+                        })
 
-        # ========== 2. 查TTS音频缓存 ==========
-        cached_audio = cache_service.get_tts_audio(full_response)
+                    audio = await speech_service.text_to_speech(sentence)
+                    if audio:
+                        if not first_audio_sent:
+                            # 首句音频到达：先发完整文本再发音频
+                            first_audio_sent = True
+                        await manager.send_bytes(session_id, audio)
+                        print(f"[TTS] 分句已发送: {sentence[:15]}... ({len(audio)} bytes)")
 
-        if cached_audio:
-            # --- TTS缓存命中 ---
-            audio_data = cached_audio
-            print(f"[TTS] 缓存命中! 跳过语音合成 ({len(audio_data)} bytes)")
-        else:
-            # --- TTS缓存未命中：合成语音 ---
-            await manager.send_json(session_id, {
-                "type": "status",
-                "data": {"status": "synthesizing", "message": "正在合成语音..."}
-            })
+        # 处理 buffer 中剩余的文本
+        remaining = sentence_buffer.strip()
+        if remaining:
+            audio = await speech_service.text_to_speech(remaining)
+            if audio:
+                await manager.send_bytes(session_id, audio)
+                print(f"[TTS] 尾句已发送: {remaining[:15]}... ({len(audio)} bytes)")
 
-            print("[TTS] 合成语音...", end=" ", flush=True)
-            audio_data = await speech_service.text_to_speech(full_response)
-            print(f"完成! ({len(audio_data) if audio_data else 0} bytes)")
+        # 发送完整文本（前端以此为最终文字展示）
+        await manager.send_json(session_id, {
+            "type": "text_output",
+            "data": {"text": full_response, "isPartial": False}
+        })
 
-            # 缓存TTS音频
-            if audio_data:
-                cache_service.set_tts_audio(full_response, audio_data)
+        # 缓存完整回复
+        cache_service.set_llm_response(user_text, full_response)
 
-        # ========== 3. 发送音频 + 完成 ==========
-        if audio_data:
-            await manager.send_bytes(session_id, audio_data)
-            await send_viseme_data(session_id, full_response)
+        # 后台缓存完整音频（下次同样问题直接命中）
+        full_audio = await speech_service.text_to_speech(full_response)
+        if full_audio:
+            cache_service.set_tts_audio(full_response, full_audio)
 
         await manager.send_json(session_id, {
             "type": "status",
@@ -242,7 +274,7 @@ async def process_user_input(session_id: str, user_text: str):
         })
 
         elapsed = _time.time() - start_time
-        print(f"[OK] 处理完成, 总耗时: {elapsed:.2f}秒")
+        print(f"[OK] 流式管道完成, 总耗时: {elapsed:.2f}秒")
 
     except Exception as e:
         print(f"❌ 处理用户输入时出错: {e}")

@@ -169,9 +169,9 @@ const getSeasonTemp = () => {
 const noticeText = ref('六盘水梅花山滑雪场已开放，春季赏花活动火热进行中！')
 
 const bannerList = ref([
-  { image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80', title: '凉都六盘水', link: '' },
-  { image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80', title: '梅花山景区', link: '' },
-  { image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80', title: '乌蒙大草原', link: '' }
+  { image: '/static/default-spot.svg', title: '凉都六盘水', link: '' },
+  { image: '/static/default-spot.svg', title: '梅花山景区', link: '' },
+  { image: '/static/default-spot.svg', title: '乌蒙大草原', link: '' }
 ])
 
 const menuList = [
@@ -197,13 +197,13 @@ const catList = [
 
 const rankList = ref([
   { id: '1', title: '乌蒙大草原', loc: '盘州市', tag: '热门',
-    img: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80' },
+    img: '/static/default-spot.svg' },
   { id: '2', title: '梅花山景区', loc: '钟山区', tag: '必玩',
-    img: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=80' },
+    img: '/static/default-spot.svg' },
   { id: '3', title: '三线建设博物馆', loc: '钟山区', tag: '研学',
-    img: 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?w=400&q=80' },
+    img: '/static/default-spot.svg' },
   { id: '4', title: '北盘江', loc: '水城区', tag: null,
-    img: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&q=80' }
+    img: '/static/default-spot.svg' }
 ])
 
 const loadHomeData = async () => {

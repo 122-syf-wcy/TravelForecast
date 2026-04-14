@@ -2,24 +2,53 @@
 智教黔行 - FastAPI 主入口
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 import uvicorn
 import asyncio
+import time
+from collections import defaultdict
 
 from app.core.config import get_settings
 from app.api import websocket, chat
 
 settings = get_settings()
 
-# 创建 FastAPI 应用
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    """简易 IP 速率限制：每 IP 60秒内最多 30 次请求"""
+
+    def __init__(self, app, max_requests: int = 30, window_seconds: int = 60):
+        super().__init__(app)
+        self.max_requests = max_requests
+        self.window = window_seconds
+        self._hits: dict[str, list[float]] = defaultdict(list)
+
+    async def dispatch(self, request: Request, call_next):
+        if request.url.path in ("/health", "/"):
+            return await call_next(request)
+
+        ip = request.client.host if request.client else "unknown"
+        now = time.time()
+        cutoff = now - self.window
+        hits = self._hits[ip] = [t for t in self._hits[ip] if t > cutoff]
+
+        if len(hits) >= self.max_requests:
+            return Response("Too Many Requests", status_code=429)
+
+        hits.append(now)
+        return await call_next(request)
+
+
 app = FastAPI(
     title="智教黔行 - 数字人后端服务",
     description="3D数字人研学智能决策平台后端API",
     version="1.0.0"
 )
 
-# 配置 CORS
+app.add_middleware(RateLimitMiddleware, max_requests=30, window_seconds=60)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins.split(","),

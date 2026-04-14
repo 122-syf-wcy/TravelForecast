@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="user-list text-gray-800">
     <div class="page-header mb-6">
       <h2 class="text-2xl font-bold text-gray-800">用户管理</h2>
@@ -306,6 +306,13 @@ const searchQuery = ref('')
 const userGrowthChartRef = ref<HTMLElement | null>(null)
 const userDistributionChartRef = ref<HTMLElement | null>(null)
 
+const onChartsResize = () => {
+  const g = userGrowthChartRef.value
+  const d = userDistributionChartRef.value
+  if (g) echarts.getInstanceByDom(g)?.resize()
+  if (d) echarts.getInstanceByDom(d)?.resize()
+}
+
 // 筛选表单
 const filterForm = reactive({
   username: '',
@@ -592,9 +599,11 @@ onMounted(async () => {
     await initUserGrowthChart()
     await initUserDistributionChart()
   })
+  window.addEventListener('resize', onChartsResize)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', onChartsResize)
   [userGrowthChartRef, userDistributionChartRef].forEach(r => {
     if (r.value) {
       const inst = echarts.getInstanceByDom(r.value)
@@ -658,7 +667,6 @@ const initUserGrowthChart = async () => {
       ]
     }
     myChart.setOption(option)
-    window.addEventListener('resize', () => myChart.resize())
   } catch (error) { console.error('加载用户增长数据失败:', error) }
 }
 
@@ -696,7 +704,6 @@ const initUserDistributionChart = async () => {
       ]
     }
     myChart.setOption(option)
-    window.addEventListener('resize', () => myChart.resize())
   } catch (error) { console.error('加载用户分布数据失败:', error) }
 }
 </script>

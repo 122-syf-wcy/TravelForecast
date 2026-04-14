@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="policy-sandbox">
     <div class="page-header mb-6">
       <h1 class="text-2xl text-[#2C3E50] mb-2">政策沙盘</h1>
@@ -122,12 +122,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { RefreshRight } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import { getMerchantScenicInfo } from '@/api/merchantScenic'
 
 const simulationChartRef = ref<HTMLElement | null>(null)
+
+const onChartsResize = () => {
+  const el = simulationChartRef.value
+  if (el) echarts.getInstanceByDom(el)?.resize()
+}
 
 // 当前景区名称（从API获取）
 const currentScenicName = ref('加载中...')
@@ -290,12 +295,20 @@ const updateSimulationChart = () => {
   }
   
   myChart.setOption(option)
-  window.addEventListener('resize', () => myChart.resize())
 }
 
 onMounted(() => {
   initScenicInfo()
   simulatePolicy()
+  window.addEventListener('resize', onChartsResize)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onChartsResize)
+  if (simulationChartRef.value) {
+    const inst = echarts.getInstanceByDom(simulationChartRef.value)
+    if (inst) inst.dispose()
+  }
 })
 </script>
 

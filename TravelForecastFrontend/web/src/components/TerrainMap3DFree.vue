@@ -33,6 +33,8 @@ const emit = defineEmits(['markerClick'])
 const mapContainer = ref<HTMLElement | null>(null)
 let map: any = null
 let markers: any[] = []
+let destroyed = false
+let retryTimer: ReturnType<typeof setTimeout> | null = null
 
 // 景区数据接口
 interface ScenicSpotData {
@@ -51,7 +53,7 @@ const scenicSpots = ref<ScenicSpotData[]>([])
 const loadScenicData = async () => {
   try {
     console.log('📡 开始从API加载景区数据...')
-    const res: any = await getScenicSpots({ city: '六盘水', size: 100 })
+    const res: any = await getScenicSpots({ city: '六盘水' })
     const data = res?.data || res
     const list = data?.list || data?.records || (Array.isArray(data) ? data : [])
 
@@ -167,8 +169,8 @@ onMounted(async () => {
   
   if (rect.width === 0 || rect.height === 0) {
     console.warn('⚠️ 容器初始尺寸为0，延迟500ms后再初始化...')
-    setTimeout(() => {
-      initMap()
+    retryTimer = setTimeout(() => {
+      if (!destroyed) initMap()
     }, 500)
     return
   }
@@ -177,30 +179,36 @@ onMounted(async () => {
 })
 
 const initMap = () => {
-  if (!mapContainer.value) return
+  if (!mapContainer.value || destroyed) return
   
-  // 检查高德地图API是否加载
   if (!window.AMap) {
     console.error('❌ 高德地图API未加载，500ms后重试...')
-    setTimeout(initMap, 500)
+    retryTimer = setTimeout(() => {
+      if (!destroyed) initMap()
+    }, 500)
     return
   }
   
   console.log('🚀 开始初始化高德地图...')
   
   try {
-    // 创建高德地图实例 - 3D视图
+    // 创建高德地图实例 - 3D卫星地形视图
     map = new window.AMap.Map(mapContainer.value, {
-      zoom: 9,
+      zoom: 10,
       center: [104.65, 26.35],
-      pitch: 50, // 3D视角倾斜角度
+      pitch: 55, // 3D视角倾斜角度
+      rotation: -15, // 初始旋转角度
       viewMode: '3D', // 开启3D视图
-      mapStyle: 'amap://styles/normal', // 深色主题
+      terrain: true, // 开启地形起伏
       showLabel: true,
-      features: ['bg', 'road', 'building', 'point']
+      features: ['bg', 'road', 'point'],
+      layers: [
+        new window.AMap.TileLayer.Satellite(),
+        new window.AMap.TileLayer.RoadNet()
+      ]
     })
     
-    console.log('✅ 高德地图创建成功')
+    console.log('✅ 高德地图创建成功（卫星3D地形）')
     console.log('📍 地图中心:', map.getCenter())
     console.log('🔍 缩放级别:', map.getZoom())
     
@@ -274,13 +282,6 @@ const initMap = () => {
               </span>
             </div>
           </div>
-          <style>
-            @keyframes pulse-ring {
-              0% { transform: scale(0.8); opacity: 0.5; }
-              50% { transform: scale(1.2); opacity: 0.2; }
-              100% { transform: scale(0.8); opacity: 0.5; }
-            }
-          </style>
         `
         
         // 创建高德地图标记
@@ -380,15 +381,14 @@ const initMap = () => {
 }
 
 onBeforeUnmount(() => {
-  console.log('🧹 组件卸载，清理地图资源...')
+  destroyed = true
+  if (retryTimer) { clearTimeout(retryTimer); retryTimer = null }
   
-  // 清除所有标记
   markers.forEach(marker => {
     marker.setMap(null)
   })
   markers = []
   
-  // 销毁地图实例
   if (map) {
     map.destroy()
     map = null
@@ -478,5 +478,13 @@ onBeforeUnmount(() => {
   background: #FFFFFF !important;
   color: #1F2937 !important;
   border: 1px solid #E5E7EB !important;
+}
+</style>
+
+<style>
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 0.2; }
+  100% { transform: scale(0.8); opacity: 0.5; }
 }
 </style>

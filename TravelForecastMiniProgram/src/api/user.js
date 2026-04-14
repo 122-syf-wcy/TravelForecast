@@ -28,7 +28,7 @@ export const addFavorite = (userId, scenicId) =>
  * 取消收藏
  */
 export const removeFavorite = (userId, scenicId) =>
-  request({ url: '/user/favorites', method: 'DELETE', data: { userId, scenicId } })
+  request({ url: `/user/favorites?userId=${userId}&scenicId=${scenicId}`, method: 'DELETE' })
 
 /**
  * 检查是否已收藏

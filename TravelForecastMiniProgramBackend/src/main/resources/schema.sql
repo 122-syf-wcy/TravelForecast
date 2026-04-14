@@ -41,3 +41,19 @@ CREATE TABLE IF NOT EXISTS mp_feedback (
     INDEX idx_user_id (user_id),
     INDEX idx_status (status)
 ) COMMENT '小程序用户反馈';
+
+-- 用户收货地址表
+CREATE TABLE IF NOT EXISTS mp_user_address (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    name VARCHAR(50) NOT NULL COMMENT '收货人姓名',
+    phone VARCHAR(20) NOT NULL COMMENT '手机号',
+    province VARCHAR(50) NOT NULL DEFAULT '' COMMENT '省',
+    city VARCHAR(50) NOT NULL DEFAULT '' COMMENT '市',
+    district VARCHAR(50) NOT NULL DEFAULT '' COMMENT '区',
+    detail VARCHAR(255) NOT NULL DEFAULT '' COMMENT '详细地址',
+    is_default TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否默认地址',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_user_id (user_id)
+) COMMENT '小程序用户收货地址';

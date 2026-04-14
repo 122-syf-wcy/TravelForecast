@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="real-time-service-container">
     <div class="flex gap-6 items-start">
       <!-- 实时信息面板 -->
@@ -2887,10 +2887,6 @@ const initVisitorChart = async () => {
   }
   
   visitorChart.setOption(option)
-  
-  window.addEventListener('resize', () => {
-    visitorChart?.resize()
-  })
 }
 
 // 获取景区图片（优先使用从API获取的真实数据）
