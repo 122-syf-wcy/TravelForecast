@@ -1,0 +1,185 @@
+# ====================================================
+# 生产环境配置 - 单机部署版
+# 所有服务部署于同一台 ECS (39.97.232.141)
+# 启动命令: java -jar gateway.jar --spring.profiles.active=prod
+# ====================================================
+
+server:
+  port: 8888
+
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      database: 2
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: public
+        group: DEFAULT_GROUP
+        fail-fast: false
+
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins:
+              - "http://localhost:3000"
+              - "http://localhost:5173"
+              - "http://39.97.232.141:8888"
+              - "*"
+            allowed-methods: [GET, POST, PUT, DELETE, OPTIONS, PATCH]
+            allowed-headers: ["*"]
+            allow-credentials: true
+            max-age: 3600
+
+      routes:
+        - id: business-service
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 200
+                redis-rate-limiter.burstCapacity: 400
+                redis-rate-limiter.requestedTokens: 1
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,INTERNAL_SERVER_ERROR
+                methods: GET,POST
+                backoff:
+                  firstBackoff: 100ms
+                  maxBackoff: 1000ms
+                  factor: 2
+
+        - id: ai-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/ai-api/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+                redis-rate-limiter.requestedTokens: 1
+
+        - id: miniprogram-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/miniprogram-api/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 150
+                redis-rate-limiter.burstCapacity: 300
+                redis-rate-limiter.requestedTokens: 1
+
+        - id: prediction-service
+          uri: http://localhost:8001
+          predicates:
+            - Path=/prediction-api/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                redis-rate-limiter.requestedTokens: 1
+
+        - id: digital-human-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/digital-human-api/**
+          filters:
+            - StripPrefix=1
+
+        - id: digital-human-websocket
+          uri: ws://localhost:8083
+          predicates:
+            - Path=/ws/**
+          filters:
+            - StripPrefix=1
+
+gateway:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: 604800
+    token-prefix: Bearer
+    header: Authorization
+
+  whitelist:
+    - /api/auth/login
+    - /api/auth/register
+    - /api/auth/captcha
+    - /api/auth/wechat/login
+    - /miniprogram-api/**
+    - /prediction-api/health
+    - /digital-human-api/health
+    - /actuator/**
+
+  rate-limit:
+    enabled: true
+    default-rate: 200
+    default-burst: 400
+
+  log:
+    enabled: true
+    log-request: true
+    log-response: false
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+    instances:
+      business-service:
+        baseConfig: default
+        waitDurationInOpenState: 5s
+      ai-service:
+        baseConfig: default
+        waitDurationInOpenState: 10s
+      prediction-service:
+        baseConfig: default
+        waitDurationInOpenState: 15s
+
+logging:
+  level:
+    root: warn
+    com.travel.gateway: info
+    org.springframework.cloud.gateway: warn
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %-40.40logger{39} : %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %-40.40logger{39} : %msg%n"
+  file:
+    name: logs/gateway.log
+    max-size: 50MB
+    max-history: 90
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+    gateway:
+      enabled: true

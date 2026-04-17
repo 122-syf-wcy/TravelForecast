@@ -1,0 +1,19 @@
+package com.travel.common;
+
+import java.lang.annotation.*;
+
+/**
+ * 操作日志注解
+ * 标记需要记录操作日志的方法
+ */
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface OperationLog {
+    /** 模块名称 */
+    String module() default "";
+    /** 操作描述 */
+    String description() default "";
+    /** 日志级别: info, warning, error */
+    String level() default "info";
+}

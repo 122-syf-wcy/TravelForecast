@@ -1,0 +1,34 @@
+# Python 客流预测服务依赖包
+# 简化版 - 易于安装
+
+# Web框架
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+pydantic==2.9.0
+python-multipart==0.0.9
+
+# 数据处理
+numpy>=1.26.0
+pandas>=2.1.0
+scikit-learn>=1.3.0
+
+# 时间序列模型 (ARIMA) - 使用statsmodels基础版本
+statsmodels>=0.14.0
+
+# 深度学习模型 (LSTM) - CPU版本
+tensorflow>=2.15.0,<2.16.0
+
+# 工具库
+python-dotenv>=1.0.0
+loguru>=0.7.0
+httpx>=0.25.0
+
+# 小波变换 (数据预处理去噪)
+PyWavelets>=1.5.0
+
+# 数据库连接
+pymysql>=1.1.0
+
+# 可选：如需可视化可安装
+# matplotlib>=3.7.0
+# seaborn>=0.13.0

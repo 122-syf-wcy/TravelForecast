@@ -1,0 +1,297 @@
+/* 统一对话框表单样式 - 清爽山水风格 */
+
+/* Dialog 容器 */
+.el-dialog {
+  background: #FFFFFF !important;
+  border: 1px solid #EBEEF5 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
+  overflow: hidden;
+  animation: dialogEnter 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes dialogEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.el-dialog__header {
+  border-bottom: 1px solid #EBEEF5;
+  padding: 20px 24px;
+  background: #FFFFFF;
+}
+
+.el-dialog__title {
+  color: #2C3E50 !important;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.el-dialog__headerbtn .el-dialog__close {
+  color: #909399 !important;
+  font-size: 18px;
+}
+
+.el-dialog__headerbtn:hover .el-dialog__close {
+  color: #2A9D8F !important;
+}
+
+.el-dialog__body {
+  padding: 24px;
+  background: #FFFFFF;
+  color: #606266;
+}
+
+.el-dialog__footer {
+  border-top: 1px solid #EBEEF5;
+  padding: 16px 24px;
+  background: #FFFFFF;
+}
+
+/* Form Labels */
+.el-form-item__label {
+  color: #606266 !important;
+  font-weight: 500;
+}
+
+/* Input/Textarea/Select 统一样式 */
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 0 0 1px #DCDFE6 inset !important;
+  transition: all 0.3s ease;
+}
+
+.el-input__wrapper:hover,
+.el-textarea__inner:hover,
+.el-select__wrapper:hover {
+  box-shadow: 0 0 0 1px #c0c4cc inset !important;
+}
+
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus,
+.el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px #2A9D8F inset !important;
+}
+
+.el-input__inner,
+.el-textarea__inner,
+.el-select__input {
+  color: #303133 !important;
+  font-size: 14px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #A8ABB2 !important;
+}
+
+/* Select Dropdown */
+.el-select-dropdown {
+  background: #FFFFFF !important;
+  border: 1px solid #EBEEF5 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+}
+
+.el-select-dropdown__item {
+  color: #606266 !important;
+}
+
+.el-select-dropdown__item:hover,
+.el-select-dropdown__item.is-hovering {
+  background-color: #F5F7FA !important;
+}
+
+.el-select-dropdown__item.is-selected {
+  color: #2A9D8F !important;
+  background-color: rgba(42, 157, 143, 0.05) !important;
+  font-weight: 600;
+}
+
+/* Radio/Checkbox */
+.el-radio,
+.el-checkbox {
+  color: #606266 !important;
+}
+
+.el-radio__input.is-checked .el-radio__inner {
+  background-color: #2A9D8F !important;
+  border-color: #2A9D8F !important;
+}
+
+.el-radio__input.is-checked + .el-radio__label {
+  color: #2A9D8F !important;
+}
+
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  background-color: #2A9D8F !important;
+  border-color: #2A9D8F !important;
+}
+
+.el-checkbox__input.is-checked + .el-checkbox__label {
+  color: #2A9D8F !important;
+}
+
+/* Upload */
+.el-upload,
+.el-upload-dragger {
+  background-color: #FAFAFA !important;
+  border: 1px dashed #DCDFE6 !important;
+  border-radius: 8px;
+}
+
+.el-upload:hover,
+.el-upload-dragger:hover {
+  border-color: #2A9D8F !important;
+}
+
+.el-upload-list__item {
+  background-color: #F5F7FA !important;
+  border: 1px solid #EBEEF5 !important;
+  color: #606266 !important;
+  border-radius: 6px;
+}
+
+/* Date Picker */
+.el-picker-panel {
+  background: #FFFFFF !important;
+  border: 1px solid #EBEEF5 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+  color: #303133 !important;
+}
+
+.el-date-picker__header-label,
+.el-date-table th {
+  color: #303133 !important;
+}
+
+.el-date-table td.available:hover {
+  color: #2A9D8F !important;
+}
+
+.el-date-table td.today .el-date-table-cell__text {
+  color: #2A9D8F !important;
+}
+
+.el-date-table td.current:not(.disabled) .el-date-table-cell__text {
+  background-color: #2A9D8F !important;
+  color: #FFFFFF !important;
+}
+
+/* Input Number */
+.el-input-number__decrease,
+.el-input-number__increase {
+  background-color: #F5F7FA !important;
+  border-color: #DCDFE6 !important;
+  color: #606266 !important;
+}
+
+.el-input-number__decrease:hover,
+.el-input-number__increase:hover {
+  background-color: #EBEEF5 !important;
+  color: #2A9D8F !important;
+}
+
+/* Switch */
+.el-switch.is-checked .el-switch__core {
+  background-color: #2A9D8F !important;
+  border-color: #2A9D8F !important;
+}
+
+/* Buttons in Footer */
+.el-dialog__footer .el-button {
+  min-width: 80px;
+  border-radius: 8px;
+}
+
+.el-dialog__footer .el-button--primary {
+  background: #2A9D8F !important;
+  border-color: #2A9D8F !important;
+  color: #FFFFFF !important;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+}
+
+.el-dialog__footer .el-button--primary:hover {
+  background: #238B7E !important;
+  border-color: #238B7E !important;
+  box-shadow: 0 6px 16px rgba(42, 157, 143, 0.4);
+  transform: translateY(-1px);
+}
+
+.el-dialog__footer .el-button:not(.el-button--primary) {
+  background-color: #FFFFFF !important;
+  border: 1px solid #DCDFE6 !important;
+  color: #606266 !important;
+}
+
+.el-dialog__footer .el-button:not(.el-button--primary):hover {
+  background-color: #F5F7FA !important;
+  border-color: #c0c4cc !important;
+  color: #303133 !important;
+}
+
+/* 通用表格样式覆盖 - 确保浅色主题 */
+.el-table {
+  --el-table-bg-color: #FFFFFF;
+  --el-table-tr-bg-color: #FFFFFF;
+  --el-table-header-bg-color: #F5F7FA;
+  --el-table-row-hover-bg-color: rgba(42, 157, 143, 0.04);
+  --el-table-border-color: #EBEEF5;
+  background-color: #FFFFFF !important;
+}
+
+.el-table th.el-table__cell {
+  background-color: #F5F7FA !important;
+  color: #303133 !important;
+  font-weight: 600;
+}
+
+.el-table td.el-table__cell {
+  color: #606266 !important;
+}
+
+/* Pagination 分页 */
+.el-pagination {
+  --el-pagination-bg-color: #FFFFFF;
+  --el-pagination-text-color: #606266;
+  --el-pagination-button-bg-color: #FFFFFF;
+}
+
+.el-pagination .el-pager li.is-active {
+  background-color: #2A9D8F !important;
+  color: #FFFFFF !important;
+}
+
+/* Message Box */
+.el-message-box {
+  background: #FFFFFF !important;
+  border: 1px solid #EBEEF5 !important;
+  border-radius: 12px !important;
+}
+
+.el-message-box__title {
+  color: #303133 !important;
+}
+
+.el-message-box__message {
+  color: #606266 !important;
+}
+
+/* Popover */
+.el-popover {
+  background: #FFFFFF !important;
+  border: 1px solid #EBEEF5 !important;
+}/* Tooltip */
+.el-tooltip__popper.is-light {
+  background: #FFFFFF !important;
+  border: 1px solid #EBEEF5 !important;
+  color: #606266 !important;
+}

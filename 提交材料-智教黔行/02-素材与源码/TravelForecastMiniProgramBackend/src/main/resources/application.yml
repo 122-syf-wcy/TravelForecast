@@ -1,0 +1,66 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: travel-mini-program-backend
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  sql:
+    init:
+      mode: never  # 首次部署后改为never，避免重复建表
+      schema-locations: classpath:schema.sql
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:39.97.232.141}:${DB_PORT:3306}/${DB_NAME:travel_prediction}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST:39.97.232.141}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 3
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+oss:
+  endpoint: https://oss-cn-beijing.aliyuncs.com
+  region: cn-beijing
+  bucket: smarttourism717
+  publicDomain: https://smarttourism717.oss-cn-beijing.aliyuncs.com
+  access-key-id: ${OSS_ACCESS_KEY_ID}
+  access-key-secret: ${OSS_ACCESS_KEY_SECRET}
+
+app:
+  base-url: http://localhost:8082
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 604800
+
+wechat:
+  miniapp:
+    appid: ${WECHAT_APPID:wx9569d09c12f8de06}
+    appsecret: ${WECHAT_APPSECRET}
+
+# 日志配置
+logging:
+  level:
+    root: info
+    com.travel: debug
+    com.travel.mapper: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %-40.40logger{39} : %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %-40.40logger{39} : %msg%n"
+  file:
+    name: logs/travel-mini-program.log
+    max-size: 10MB
+    max-history: 30
+
