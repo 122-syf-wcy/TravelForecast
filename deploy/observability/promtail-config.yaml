@@ -1,0 +1,55 @@
+###############################################################################
+# 智教黔行 · Promtail 配置
+# 抓取仓库内 6 个服务的本地日志目录，按 service / level 标签发到 Loki。
+###############################################################################
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: warn
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: travel-services
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: travel-services
+          service: backend
+          __path__: /logs/backend/*.log
+      - targets: [localhost]
+        labels:
+          job: travel-services
+          service: ai-backend
+          __path__: /logs/ai/*.log
+      - targets: [localhost]
+        labels:
+          job: travel-services
+          service: gateway
+          __path__: /logs/gateway/*.log
+      - targets: [localhost]
+        labels:
+          job: travel-services
+          service: miniprogram-backend
+          __path__: /logs/miniprogram/*.log
+      - targets: [localhost]
+        labels:
+          job: travel-services
+          service: prediction
+          __path__: /logs/prediction/*.log
+      - targets: [localhost]
+        labels:
+          job: travel-services
+          service: digital-human
+          __path__: /logs/digital-human/*.log
+    pipeline_stages:
+      - regex:
+          # Spring Boot 默认 pattern：2026-04-19 01:50:33.123 INFO 1234 --- ...
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}(?:\.\d+)?)\s+(?P<level>[A-Z]+)'
+      - labels:
+          level:

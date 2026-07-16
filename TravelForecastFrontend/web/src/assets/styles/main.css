@@ -1,0 +1,409 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================
+   强制重置根元素和主体背景 - 浅色山水风格
+   ======================================== */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh; /* 确保占满全屏高度 */
+    background-color: #F5F7FA !important; /* 核心：强制浅色背景 */
+    color: #2C3E50; /* 设置默认深灰文字 */
+    overflow-x: hidden; /* 防止水平滚动条导致的白边/黑边 */
+    scroll-behavior: smooth; /* 全局平滑滚动 */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* 确保 Vue 的根挂载点也占满并使用浅色背景 */
+#app {
+    min-height: 100vh;
+    width: 100%;
+    background-color: #F5F7FA !important;
+}
+
+/* Element Plus 全局变量重置 - 浅色主题 */
+:root {
+    --el-color-primary: #2A9D8F;
+    /* 山水绿/青色 */
+    --el-color-success: #67C23A;
+    --el-color-warning: #E6A23C;
+    --el-color-danger: #F56C6C;
+    --el-color-info: #909399;
+
+    --el-bg-color: #FFFFFF;
+    --el-bg-color-overlay: #FFFFFF;
+    --el-bg-color-page: #F0F2F5;
+
+    --el-text-color-primary: #303133;
+    --el-text-color-regular: #606266;
+    --el-text-color-secondary: #909399;
+    --el-text-color-placeholder: #A8ABB2;
+
+    --el-border-color: #DCDFE6;
+    --el-border-color-light: #E4E7ED;
+    --el-border-color-lighter: #EBEEF5;
+    --el-border-color-extra-light: #F2F6FC;
+
+    --el-fill-color: #F0F2F5;
+    --el-fill-color-light: #F5F7FA;
+    --el-fill-color-lighter: #FAFAFA;
+    --el-fill-color-extra-light: #FAFCFF;
+    --el-fill-color-dark: #EBEDF0;
+
+    --el-mask-color: rgba(255, 255, 255, 0.9);
+    --el-mask-color-extra-light: rgba(255, 255, 255, 0.3);
+
+    /* 自定义山水配色变量 */
+    --color-mountain-green: #2A9D8F;
+    --color-lake-blue: #457B9D;
+    --color-sand-yellow: #E9C46A;
+    --color-sunset-orange: #F4A261;
+    --color-earth-brown: #E76F51;
+}
+
+/* 覆盖 Element Plus 默认深色输入框样式为标准浅色样式 */
+/* 如果之前有强制覆盖代码，这里需要恢复默认或重新定义 */
+
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+    background-color: var(--el-bg-color) !important;
+    box-shadow: 0 0 0 1px var(--el-border-color) inset !important;
+}
+
+.el-input__wrapper:hover,
+.el-select__wrapper:hover {
+    box-shadow: 0 0 0 1px var(--el-border-color-hover) inset !important;
+}
+
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus,
+.el-select__wrapper.is-focused {
+    box-shadow: 0 0 0 1px var(--el-color-primary) inset !important;
+}
+
+/* 确保输入框文字颜色清晰可见 */
+.el-input__inner,
+.el-textarea__inner,
+.el-select__input {
+    color: #303133 !important;
+    -webkit-text-fill-color: #303133 !important;
+}
+
+.el-input__inner::placeholder,
+.el-textarea__inner::placeholder {
+    color: #A8ABB2 !important;
+    -webkit-text-fill-color: #A8ABB2 !important;
+}
+
+/* 数字输入框 */
+.el-input-number .el-input__inner {
+    color: #303133 !important;
+    -webkit-text-fill-color: #303133 !important;
+}
+
+/* 表单标签 */
+.el-form-item__label {
+    color: #606266 !important;
+}
+
+/* 表格文字 */
+.el-table {
+    color: #303133 !important;
+}
+
+.el-table th.el-table__cell {
+    color: #303133 !important;
+    background-color: #F5F7FA !important;
+}
+
+.el-table td.el-table__cell {
+    color: #606266 !important;
+}
+
+/* 下拉选项文字 */
+.el-select-dropdown__item {
+    color: #606266 !important;
+}
+
+.el-select-dropdown__item.is-selected {
+    color: var(--el-color-primary) !important;
+}
+
+/* Tab 标签文字 */
+.el-tabs__item {
+    color: #606266 !important;
+}
+
+.el-tabs__item.is-active {
+    color: var(--el-color-primary) !important;
+}
+
+/* 对话框标题 */
+.el-dialog__title {
+    color: #303133 !important;
+}
+
+/* 面包屑 */
+.el-breadcrumb__inner {
+    color: #606266 !important;
+}
+
+.el-breadcrumb__inner.is-link:hover {
+    color: var(--el-color-primary) !important;
+}
+
+/* 下拉菜单恢复浅色 */
+.el-select-dropdown,
+.el-picker-panel {
+    background: var(--el-bg-color-overlay) !important;
+    border: 1px solid var(--el-border-color-light) !important;
+    color: var(--el-text-color-regular) !important;
+}
+
+.el-select-dropdown__item.is-selected {
+    color: var(--el-color-primary) !important;
+    background-color: var(--el-fill-color-light) !important;
+}
+
+/* --- 关键：美化滚动条，去掉深色底槽 --- */
+/* Webkit 浏览器 (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+    width: 8px; /* 滚动条宽度 */
+    height: 8px;
+}
+
+/* 滚动条轨道 (Track) - 透明或浅色 */
+::-webkit-scrollbar-track {
+    background: transparent; /* 或者 #F5F7FA */
+    border-radius: 4px;
+}
+
+/* 滚动条滑块 (Thumb) - 浅青色 */
+::-webkit-scrollbar-thumb {
+    background-color: #A7E9DF; /* 浅青色 */
+    border-radius: 4px;
+    border: 2px solid transparent; /* 增加一点边距感 */
+    background-clip: padding-box;
+}
+
+/* 滑块悬停态 */
+::-webkit-scrollbar-thumb:hover {
+    background-color: #2A9D8F; /* 深青色 */
+}
+
+/* 标题样式 - 现代非衬线 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: inherit;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+}
+
+/* 通用卡片类 - 替代之前的 holographic-card */
+.scenic-card-style {
+    background: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #EBEEF5;
+    transition: all 0.3s ease;
+}
+
+.scenic-card-style:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* 辅助文字颜色 */
+.text-mountain {
+    color: var(--color-mountain-green);
+}
+
+.text-lake {
+    color: var(--color-lake-blue);
+}
+
+/* 按钮样式微调 */
+.el-button--primary {
+    --el-button-bg-color: var(--color-mountain-green);
+    --el-button-border-color: var(--color-mountain-green);
+    --el-button-text-color: #FFFFFF;
+    --el-button-hover-bg-color: #3eb5a5;
+    --el-button-hover-border-color: #3eb5a5;
+    --el-button-hover-text-color: #FFFFFF;
+    --el-button-active-bg-color: #228b7e;
+    --el-button-active-border-color: #228b7e;
+    --el-button-active-text-color: #FFFFFF;
+    --el-button-disabled-bg-color: #a3d5ce;
+    --el-button-disabled-border-color: #a3d5ce;
+    --el-button-disabled-text-color: #FFFFFF;
+}
+
+/* 确保所有 primary 按钮文字为白色 */
+.el-button--primary,
+.el-button--primary:hover,
+.el-button--primary:focus,
+.el-button--primary:active {
+    color: #FFFFFF !important;
+}
+
+/* 确保 success/warning/danger/info 实心按钮文字为白色（排除 text/link/plain 类型） */
+.el-button--success:not(.is-text):not(.is-link):not(.is-plain),
+.el-button--warning:not(.is-text):not(.is-link):not(.is-plain),
+.el-button--danger:not(.is-text):not(.is-link):not(.is-plain),
+.el-button--info:not(.is-text):not(.is-link):not(.is-plain) {
+    color: #FFFFFF !important;
+}
+
+/* text/link 类型按钮使用各自主题色 */
+.el-button--danger.is-text,
+.el-button--danger.is-link {
+    color: var(--el-color-danger) !important;
+}
+
+.el-button--success.is-text,
+.el-button--success.is-link {
+    color: var(--el-color-success) !important;
+}
+
+.el-button--warning.is-text,
+.el-button--warning.is-link {
+    color: var(--el-color-warning) !important;
+}
+
+.el-button--info.is-text,
+.el-button--info.is-link {
+    color: var(--el-color-info) !important;
+}
+
+/* plain 类型按钮使用各自主题色，hover 时变白 */
+.el-button--danger.is-plain {
+    color: var(--el-color-danger) !important;
+}
+.el-button--danger.is-plain:hover {
+    color: #FFFFFF !important;
+}
+
+.el-button--success.is-plain {
+    color: var(--el-color-success) !important;
+}
+.el-button--success.is-plain:hover {
+    color: #FFFFFF !important;
+}
+
+.el-button--warning.is-plain {
+    color: var(--el-color-warning) !important;
+}
+.el-button--warning.is-plain:hover {
+    color: #FFFFFF !important;
+}
+
+/* plain 按钮文字使用对应主题色 */
+.el-button--primary.is-plain {
+    color: var(--color-mountain-green) !important;
+    background-color: rgba(42, 157, 143, 0.1) !important;
+}
+
+.el-button--primary.is-plain:hover {
+    color: #FFFFFF !important;
+    background-color: var(--color-mountain-green) !important;
+}
+
+/* text/link 按钮文字使用主题色 */
+.el-button--primary.is-text,
+.el-button--primary.is-link {
+    color: var(--color-mountain-green) !important;
+    background-color: transparent !important;
+}
+
+/* 默认按钮（无 type）文字颜色 */
+.el-button:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info):not(.is-text):not(.is-link) {
+    color: #606266 !important;
+}
+
+/* Radio 和 Checkbox 标签文字颜色 */
+.el-radio__label,
+.el-checkbox__label {
+    color: #606266 !important;
+}
+
+.el-radio.is-checked .el-radio__label {
+    color: var(--color-mountain-green) !important;
+}
+
+.el-checkbox.is-checked .el-checkbox__label {
+    color: var(--color-mountain-green) !important;
+}
+
+/* ========================================
+   全局过渡与动画增强
+   ======================================== */
+
+/* 所有交互元素默认开启 GPU 加速 */
+.el-button,
+.el-card,
+.el-tag,
+.el-menu-item,
+.nav-link {
+    transition: all 0.25s ease;
+}
+
+/* 卡片悬浮效果增强 */
+.el-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.el-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* 对话框弹出动画优化 */
+.el-overlay {
+    transition: opacity 0.3s ease !important;
+}
+
+.el-dialog {
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease !important;
+}
+
+/* 表格行过渡 */
+.el-table .el-table__row {
+    transition: background-color 0.2s ease;
+}
+
+/* 标签页切换动画 */
+.el-tabs__active-bar {
+    transition: transform 0.3s cubic-bezier(0.645, 0.045, 0.355, 1), width 0.3s cubic-bezier(0.645, 0.045, 0.355, 1) !important;
+}
+
+/* Loading 骨架占位 */
+.el-loading-mask {
+    transition: opacity 0.3s ease !important;
+}
+
+/* 选中项微弹效果 */
+.el-tag {
+    transition: all 0.2s ease;
+}
+
+.el-tag:hover {
+    transform: scale(1.02);
+}
+
+/* 全局 focus 可见性增强 */
+*:focus-visible {
+    outline: 2px solid rgba(42, 157, 143, 0.5);
+    outline-offset: 2px;
+    border-radius: 4px;
+}

@@ -1,0 +1,275 @@
+server:
+  port: 8888
+  # 网关作为统一入口，不需要context-path
+
+spring:
+  application:
+    name: travel-gateway
+  
+  # Redis配置（用于限流和缓存）
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 2  # 网关使用独立的Redis数据库
+      timeout: 3000
+      lettuce:
+        pool:
+          max-active: 50
+          max-idle: 20
+          min-idle: 5
+          max-wait: 3000
+
+  # Nacos 服务注册与发现（本地联调时禁用，使用静态路由即可）
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848   # Nacos服务端地址
+        namespace: public             # 命名空间
+        group: DEFAULT_GROUP
+        # username: nacos             # 开启鉴权后取消注释
+        # password: nacos
+        enabled: false                # 本地联调禁用Nacos，避免9848端口报错
+        fail-fast: false              # Nacos不可用时不阻止启动
+    
+    # Spring Cloud Gateway 配置
+    gateway:
+      # 全局CORS配置：和 allow-credentials=true 联用时必须显式列出来源
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns:
+              - "http://39.97.232.141"
+              - "http://39.97.232.141:80"
+              - "http://39.97.232.141:8888"
+              - "https://travel.dongsiwei.com"
+              - "http://travel.dongsiwei.com"
+              - "http://localhost:3000"
+              - "http://localhost:5173"
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+              - PATCH
+            allowed-headers:
+              - "*"
+            allow-credentials: true
+            max-age: 3600
+
+      # 路由配置
+      routes:
+        # ==================== 业务后端服务 ====================
+        # Backend context-path=/api，不做 StripPrefix；与 prod/docker 保持一致
+        - id: business-service
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: business-service
+                fallbackUri: forward:/fallback/business
+            - name: Retry
+              args:
+                retries: 3
+                statuses: BAD_GATEWAY,INTERNAL_SERVER_ERROR
+                methods: GET,POST
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
+
+        # ==================== AI智能服务 ====================
+        # AI Backend context-path=/ai-api，不做 StripPrefix
+        - id: ai-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/ai-api/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ai-service
+                fallbackUri: forward:/fallback/ai
+            - name: Retry
+              args:
+                retries: 2
+                statuses: BAD_GATEWAY,INTERNAL_SERVER_ERROR
+                methods: GET,POST
+
+        # ==================== 小程序后端服务 ====================
+        - id: miniprogram-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/miniprogram-api/**
+          filters:
+            - StripPrefix=1
+
+        # ==================== Python预测服务 ====================
+        - id: prediction-service
+          uri: http://localhost:8001
+          predicates:
+            - Path=/prediction-api/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: prediction-service
+                fallbackUri: forward:/fallback/prediction
+            - name: Retry
+              args:
+                retries: 2
+                statuses: BAD_GATEWAY,INTERNAL_SERVER_ERROR
+                methods: GET,POST
+        
+        # ==================== 数字人服务 ====================
+        - id: digital-human-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/digital-human-api/**
+          filters:
+            - StripPrefix=1
+        
+        # ==================== WebSocket代理（数字人） ====================
+        - id: digital-human-websocket
+          uri: ws://localhost:8083
+          predicates:
+            - Path=/ws/**
+          filters:
+            - StripPrefix=1
+
+      # 默认过滤器（全局应用）
+      default-filters:
+        - name: DedupeResponseHeader
+          args:
+            name: Access-Control-Allow-Credentials
+            strategy: RETAIN_FIRST
+        - name: DedupeResponseHeader
+          args:
+            name: Access-Control-Allow-Origin
+            strategy: RETAIN_FIRST
+
+# 网关配置
+gateway:
+  # JWT配置（与业务后端保持一致）
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: 604800
+    token-prefix: Bearer
+    header: Authorization
+  
+  # 认证白名单（不需要JWT验证的路径）
+  # 与后端 WebConfig.java 的 JWT 拦截器保持一致：只放行公开内容，其余强制认证
+  whitelist:
+    # 登录 / 注册 / 验证码 / 找回密码等
+    - /api/auth/**
+    - /api/captcha
+    # 游客可浏览的公共内容
+    - /api/content/**
+    - /api/scenics/**
+    - /api/scenic-spots/**
+    - /api/news/**
+    - /api/reviews
+    - /api/reviews/scenic/**
+    - /api/announcements/**
+    - /api/dashboard/**
+    - /api/prediction/**
+    - /api/policy/**
+    - /api/oss/proxy/**
+    - /api/images/**
+    # 小程序登录/注册等公开接口（其余走认证）
+    - /miniprogram-api/wechat/login
+    - /miniprogram-api/auth/**
+    - /miniprogram-api/home/**
+    - /miniprogram-api/scenic/list
+    - /miniprogram-api/scenic/detail/**
+    # 预测 & 数字人：仅健康检查与公共查询放行
+    - /prediction-api/health
+    - /prediction-api/api/prediction/models/info
+    - /digital-human-api/health
+    # AI：仅公开问答/健康检查放行，写操作走认证
+    - /ai-api/health
+    - /ai-api/actuator/health
+    # 数字人 WebSocket 单独走网关鉴权（在 WebSocket 建连时携带 token）
+    - /ws/avatar
+    # 监控 & 网关 fallback
+    - /actuator/**
+    - /fallback/**
+  
+  # 限流配置
+  rate-limit:
+    enabled: true
+    default-rate: 100  # 默认每秒100请求
+    default-burst: 200 # 默认突发200请求
+  
+  # 日志配置
+  log:
+    enabled: true
+    log-request: true
+    log-response: false  # 响应日志默认关闭（数据量大）
+
+# Resilience4j 熔断器配置
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+    instances:
+      business-service:
+        baseConfig: default
+        waitDurationInOpenState: 5s
+      ai-service:
+        baseConfig: default
+        waitDurationInOpenState: 10s
+      prediction-service:
+        baseConfig: default
+        waitDurationInOpenState: 15s
+
+# 日志配置
+logging:
+  level:
+    root: info
+    com.travel.gateway: debug
+    org.springframework.cloud.gateway: debug
+    org.springframework.web: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %-40.40logger{39} : %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%thread] %-40.40logger{39} : %msg%n"
+  file:
+    name: logs/gateway.log
+    max-size: 10MB
+    max-history: 30
+
+# Actuator + Prometheus + Tracing
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+    gateway:
+      enabled: true  # 启用 Gateway Actuator 端点（/actuator/gateway/routes）
+  metrics:
+    tags:
+      application: ${spring.application.name:travel-gateway}
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING:1.0}
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+

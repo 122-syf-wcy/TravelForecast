@@ -1,4 +1,17 @@
 #!/bin/bash
+
+# ---------------- 自动加载 secrets/.env ----------------
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+for cand in "$SCRIPT_DIR/../secrets/.env" "/opt/travel/secrets/.env"; do
+    if [ -f "$cand" ]; then
+        set -a
+        # shellcheck disable=SC1090
+        source "$cand"
+        set +a
+        break
+    fi
+done
+# -------------------------------------------------------
 # 重启Python服务
 pkill -f "uvicorn" 2>/dev/null
 sleep 2
@@ -8,7 +21,7 @@ export DB_HOST=127.0.0.1
 export DB_PORT=3306
 export DB_NAME=travel_prediction
 export DB_USER=root
-export DB_PASSWORD=<REDACTED_DB_PASSWORD>
+# export DB_PASSWORD=<see secrets/.env>
 
 PYTHON=/opt/miniconda3/envs/travel/bin/python
 LOG=/opt/travel/logs

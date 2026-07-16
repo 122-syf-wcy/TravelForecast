@@ -1,0 +1,97 @@
+###############################################################################
+# 智教黔行 · 可观测性栈（Prometheus + Grafana + Tempo + Loki + Promtail）
+#
+# 启动：
+#   docker compose -f deploy/observability/docker-compose.yml up -d
+# 端口：
+#   3000  Grafana（admin/admin，首次登录可改）
+#   9090  Prometheus
+#   3200  Tempo HTTP 查询；4318 OTLP HTTP 入口（4317 为 gRPC）
+#   3100  Loki HTTP
+# 使用方式：
+#   - Spring Boot 服务通过 OTEL_EXPORTER_OTLP_ENDPOINT=http://host.docker.internal:4318 发送 trace
+#   - Prometheus 主动 scrape 各服务 /actuator/prometheus 或 /metrics（详见 prometheus.yml）
+###############################################################################
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: travel-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+      # 接收 Tempo metrics_generator 推送的 span metrics
+      - '--web.enable-remote-write-receiver'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./.data/prometheus:/prometheus
+    ports:
+      - "9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: travel-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_FEATURE_TOGGLES_ENABLE: traceqlEditor
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./.data/grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - tempo
+      - loki
+
+  tempo:
+    image: grafana/tempo:2.6.0
+    container_name: travel-tempo
+    restart: unless-stopped
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml:ro
+      - ./.data/tempo:/var/tempo
+    ports:
+      - "3200:3200"   # Tempo HTTP API
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  loki:
+    image: grafana/loki:3.2.0
+    container_name: travel-loki
+    restart: unless-stopped
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - ./.data/loki:/loki
+    ports:
+      - "3100:3100"
+
+  promtail:
+    image: grafana/promtail:3.2.0
+    container_name: travel-promtail
+    restart: unless-stopped
+    command: ["-config.file=/etc/promtail/promtail.yaml"]
+    volumes:
+      - ./promtail-config.yaml:/etc/promtail/promtail.yaml:ro
+      - /var/log:/var/log:ro
+      - ../../TravelForecastBackend/logs:/logs/backend:ro
+      - ../../TravelForecastingAIBackend/logs:/logs/ai:ro
+      - ../../TravelForecastGateway/logs:/logs/gateway:ro
+      - ../../TravelForecastMiniProgramBackend/logs:/logs/miniprogram:ro
+      - ../../TravelForecast-PythonPredictionService/logs:/logs/prediction:ro
+      - ../../TravelForecast-DigitalHuman/backend/logs:/logs/digital-human:ro
+    depends_on:
+      - loki

@@ -1,0 +1,45 @@
+# 智教黔行 - 后端服务依赖
+# Python 3.10+
+
+# Web Framework
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+websockets>=12.0
+
+# AI/LLM
+openai>=1.12.0
+
+# Speech Services
+edge-tts>=6.1.9
+
+# Data Processing
+pydantic>=2.9.0
+python-dotenv>=1.0.1
+numpy>=1.26.4
+
+# Async Support
+aiohttp>=3.9.3
+aiofiles>=23.2.1
+httpx>=0.27.0
+
+# Utilities
+python-multipart>=0.0.9
+orjson>=3.9.13
+
+# STT语音识别 - Vosk离线识别（免费、无需联网）
+vosk>=0.3.44
+pydub>=0.25.1
+
+# JWT认证
+PyJWT>=2.8.0
+passlib[bcrypt]>=1.7.4
+
+# 可观测性：Prometheus 指标 + OpenTelemetry trace
+# 锁到 OTel 1.27 系列，避免拉到要求 protobuf>=5 的版本（与其他 ML 依赖冲突）。
+prometheus-fastapi-instrumentator>=7.0.0
+protobuf>=4.21.6,<5
+opentelemetry-api==1.27.0
+opentelemetry-sdk==1.27.0
+opentelemetry-exporter-otlp==1.27.0
+opentelemetry-instrumentation-fastapi==0.48b0
+opentelemetry-instrumentation-logging==0.48b0

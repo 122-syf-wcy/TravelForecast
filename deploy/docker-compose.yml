@@ -1,0 +1,200 @@
+###############################################################################
+# 智教黔行 一键本地启动 Compose
+# 用法：在仓库根目录执行
+#   docker compose -f deploy/docker-compose.yml --env-file secrets/.env up -d --build
+# 可选：
+#   docker compose -f deploy/docker-compose.yml logs -f gateway
+#
+# 注意：
+# - 基础设施（MySQL / Redis）随 compose 启动，数据持久化在 deploy/.data 下。
+# - 所有服务共享同一份 .env（默认使用 secrets/.env），密钥统一从宿主环境注入。
+# - Gateway 启用 `docker` profile，路由指向容器内的 host.docker.internal / 服务名。
+###############################################################################
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: travel-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-travel_prediction}
+      TZ: Asia/Shanghai
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - ./.data/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-uroot", "-p${DB_PASSWORD}", "-h", "localhost"]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    container_name: travel-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - ./.data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.java
+      args:
+        SERVICE_DIR: TravelForecastBackend
+        JAR_NAME: travel-prediction-1.0.0.jar
+    container_name: travel-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-travel_prediction}
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY}
+      AMAP_API_KEY: ${AMAP_API_KEY}
+      OSS_ACCESS_KEY_ID: ${OSS_ACCESS_KEY_ID}
+      OSS_ACCESS_KEY_SECRET: ${OSS_ACCESS_KEY_SECRET}
+      OSS_ENDPOINT: ${OSS_ENDPOINT:-https://oss-cn-beijing.aliyuncs.com}
+      OSS_BUCKET: ${OSS_BUCKET:-smarttourism717}
+      OSS_DOMAIN: ${OSS_DOMAIN}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_AUTH_CODE: ${MAIL_AUTH_CODE:-}
+      APP_FRONTEND_URL: ${APP_FRONTEND_URL:-http://localhost:5173}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  ai-backend:
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.java
+      args:
+        SERVICE_DIR: TravelForecastingAIBackend
+        JAR_NAME: travel-ai-service-1.0.0.jar
+    container_name: travel-ai-backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-travel_prediction}
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY}
+      AMAP_API_KEY: ${AMAP_API_KEY}
+    depends_on:
+      backend:
+        condition: service_started
+      prediction:
+        condition: service_started
+    ports:
+      - "8081:8081"
+
+  mini-backend:
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.java
+      args:
+        SERVICE_DIR: TravelForecastMiniProgramBackend
+        JAR_NAME: travel-forecast-mini-program-backend-1.0.0.jar
+    container_name: travel-miniprogram-backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-travel_prediction}
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      WECHAT_APPID: ${WECHAT_APPID}
+      WECHAT_APPSECRET: ${WECHAT_APPSECRET}
+      OSS_ACCESS_KEY_ID: ${OSS_ACCESS_KEY_ID}
+      OSS_ACCESS_KEY_SECRET: ${OSS_ACCESS_KEY_SECRET}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8082:8082"
+
+  prediction:
+    build:
+      context: ../TravelForecast-PythonPredictionService
+      dockerfile: ../deploy/docker/Dockerfile.prediction
+    container_name: travel-prediction
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: INFO
+      PREDICTION_CORS_ORIGINS: ${PREDICTION_CORS_ORIGINS:-*}
+    ports:
+      - "8001:8001"
+
+  digital-human:
+    build:
+      context: ../TravelForecast-DigitalHuman/backend
+      dockerfile: ../../deploy/docker/Dockerfile.digital-human
+    container_name: travel-digital-human
+    restart: unless-stopped
+    environment:
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}
+      JWT_SECRET: ${JWT_SECRET}
+      PREDICTION_SERVICE_URL: http://prediction:8001
+    depends_on:
+      prediction:
+        condition: service_started
+    ports:
+      - "8083:8083"
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: deploy/docker/Dockerfile.java
+      args:
+        SERVICE_DIR: TravelForecastGateway
+        JAR_NAME: travel-gateway-1.0.0.jar
+    container_name: travel-gateway
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      backend:
+        condition: service_started
+      ai-backend:
+        condition: service_started
+      prediction:
+        condition: service_started
+      digital-human:
+        condition: service_started
+    ports:
+      - "8888:8888"

@@ -21,6 +21,9 @@ jspm_packages/
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
+.coverage
+htmlcov/
 .venv/
 venv/
 env/
@@ -64,6 +67,8 @@ passwords.txt
 # 部署配置含敏感信息
 deploy/server-env.sh
 application-local.yml
+# 预测服务本地配置（可能包含数据库密码和 API Secret）
+**/config.env
 
 # ==================== OS 生成文件 ====================
 .DS_Store
@@ -86,4 +91,9 @@ Thumbs.db
 *.bak.*
 *~
 *.iml
+**/cache_data/
 TravelForecastFrontend/web/dist.zip
+
+# ==================== 本地打包产物 ====================
+# 根目录竞赛提交包超过 GitHub 普通文件限制，且不属于源代码
+/提交材料-智教黔行.zip

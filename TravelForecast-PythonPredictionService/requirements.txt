@@ -1,0 +1,45 @@
+# Python 客流预测服务依赖包
+# 简化版 - 易于安装
+
+# Web框架
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+pydantic==2.9.0
+python-multipart==0.0.9
+
+# 数据处理
+numpy>=1.26.0
+pandas>=2.1.0
+scikit-learn>=1.3.0
+
+# 时间序列模型 (ARIMA) - 使用statsmodels基础版本
+statsmodels>=0.14.0
+
+# 深度学习模型 (LSTM) - CPU版本
+tensorflow>=2.15.0,<2.16.0
+
+# 工具库
+python-dotenv>=1.0.0
+loguru>=0.7.0
+httpx>=0.25.0
+
+# 小波变换 (数据预处理去噪)
+PyWavelets>=1.5.0
+
+# 数据库连接
+pymysql>=1.1.0
+
+# 可观测性：Prometheus 指标 + OpenTelemetry trace
+# 注意：OTel >= 1.31 会拉 protobuf>=5，与 tensorflow 2.15 的 protobuf<5 冲突，
+# 因此固定到 1.27 系列；同时显式指定 protobuf 版本上限。
+prometheus-fastapi-instrumentator>=7.0.0
+protobuf>=4.21.6,<5
+opentelemetry-api==1.27.0
+opentelemetry-sdk==1.27.0
+opentelemetry-exporter-otlp==1.27.0
+opentelemetry-instrumentation-fastapi==0.48b0
+opentelemetry-instrumentation-logging==0.48b0
+
+# 可选：如需可视化可安装
+# matplotlib>=3.7.0
+# seaborn>=0.13.0
